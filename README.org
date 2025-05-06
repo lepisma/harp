@@ -1,6 +1,13 @@
 #+TITLE: harp
 
-Personal health tracker.
+Personal Health Tracker with focus on data privacy.
+
+-----
+
+Metric entry could be two kinds:
+
++ Simple line item in org-list. With annotation allowance.
++ Full entry for org-attach, etc.
 
 Some notes on requirements and abstractions.
 
@@ -27,7 +34,7 @@ Extra future features:
 ** Version Plans
 *** v0.1.0
 + Org Mode database
-+ File System for blob storage
++ File System for blob storage using org-attach.
 + Input through Emacs
 
 *** v0.2.0
