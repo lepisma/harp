@@ -23,36 +23,14 @@ async function readFile(file: File): Promise<string> {
 }
 
 export async function loadLog(profile: Profile): Promise<string> {
-  return readFile(profile.logFile);
+  return readFile(profile.file);
 }
 
-// Return a list of profiles present in given root directory's file list
-export async function loadProfiles(dirFiles: FileList): Promise<Profile[]> {
-  if (dirFiles.length > 0) {
-    let profiles: Profile[] = [];
-
-    for (const file of dirFiles) {
-      const relativePath = file.webkitRelativePath || file.name;
-      const parts = relativePath.split('/');
-      const fileName = parts.pop();
-
-      // Only direct directories with and index.org in then are harp profiles
-      if (fileName === 'index.org' && parts.length === 2) {
-        const directoryPath = parts.join('/');
-
-        let content = await readFile(file);
-
-        let profile = {
-          uuid: parseOrgId(content),
-          name: parseTitle(content),
-          dir: directoryPath,
-          logFile: file,
-        };
-        profiles.push(profile);
-      }
-    }
-    return profiles;
-  } else {
-    return [];
-  }
+export async function loadProfile(file: File): Promise<Profile> {
+  let content = await readFile(file);
+  return {
+    uuid: parseOrgId(content),
+    name: parseTitle(content),
+    file: file,
+  };
 }
