@@ -86,7 +86,12 @@
 <div class="grid grid-rows-[auto_1fr_auto]">
   <div class="container mx-auto grid grid-cols-1 xl:grid-cols-[200px_minmax(0px,_1fr)_200px]">
     <header class="mt-3">
-      <h1 class="h1 p-3">harp {#if profile.name} / {profile.name} {:else}{/if}</h1>
+      {#if profile.name }
+        <div class="h3 text-gray-400 pt-3 pl-3"><i>harp</i></div>
+        <h1 class="h1 p-3">{profile.name}</h1>
+      {:else}
+        <h1 class="h1 p-3">harp</h1>
+      {/if}
     </header>
 
     <main class="col-span-1 p-4">
