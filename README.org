@@ -2,47 +2,69 @@
 
 Personal Health Tracker with focus on data privacy.
 
+1. Not linked to any cloud store.
+2. Data stored in plain Org mode files. Reports and connected files are kept as
+   org-attachments.
+3. Track metrics manually or reference a report.
+4. Log journal entries and notes.
+
 -----
 
-Metric entry could be two kinds:
+* Tabs
+Everything is tagged.
 
-+ Simple line item in org-list. With annotation allowance.
-+ Full entry for org-attach, etc.
+** Metrics
+1. Manual ones come from journal entries
+2. Automatic ones I need to work on since they either come from reports directly
+   or from some other data source.
 
-Some notes on requirements and abstractions.
+Actions:
+1. Define new metric
+2. Log new value
+3. Trends
+4. Graphs (reference values maybe too)
+5. Tag metric
 
-Reports should be made based on:
-+ Time Duration
-+ Tags & Categories
-+ Severity
-+ Manual Selection
+** Reports
+1. Scan or document asset
+2. OCRed text data from the above asset
+3. Annotation (not journal entries)
+4. Manual text entry
 
-Input mechanism should allow:
-+ Test report files
-+ Consultation notes
-+ Journal entry for symptoms etc.
+Properties:
+1. TBD
+2. Source: Hospital, lab, etc.
 
-External log system for things like fitbit:
-+ To draw reports
-+ To get datapoints for visualizations
+Actions:
+1. Add new report (file or manual entry)
+2. Run OCR
+3. Annotate report
+4. Tag report
 
-Extra future features:
-+ Smart parsing, input, organization, and formatting
-+ Semantic / full text search
-+ User friendly interface(s)
+** Journal
+1. Can refer to any consultation or report node or metric.
+2. Metrics are journal entries like in nomie (only metric lines are not shown in
+   journal tab).
 
-** Version Plans
-*** v0.1.0
-+ Org Mode database
-+ File System for blob storage using org-attach.
-+ Input through Emacs
+Properties:
+1. Spoiler (hidden type)
 
-*** v0.2.0
-+ System for taking report out for consultation
+Actions:
+1. Add new entry
+2. Link other artifacts
+3. Add images from, say, camera (for symptoms etc.)
 
-*** v0.3.0
-+ External log sources
+** Consultations
+Similar to reports with maybe different properties and no manual input.
 
-*** v0.4.0
-+ First version of visualizations and dashboards
+-----
 
+Other features:
+1. Unified view
+2. Selective slicing based on time and filters
+3. Severity level
+4. Share to harp (camera scan, pdfs, clipboard, emails, whatsapp, etc.)
+5. OCR
+6. Smart Parsing
+7. Full Text Search
+8. Viz and Dashboards

@@ -1,10 +1,3 @@
-// File system interaction utilities
-export interface Profile {
-  uuid: string;
-  name: string;
-  file: File;
-}
-
 export interface Metric {
   id: string;
   unit: string;
@@ -21,7 +14,9 @@ export interface Asset {
 
 export interface MetricValue {
   id: string;
+  datetime: Date;
   value: number;
+  reference: string;
 }
 
 export interface JournalEntry {
@@ -63,4 +58,19 @@ export interface Consultation {
   source: Source;
   assets: Asset[];
   annotation?: string;
+}
+
+export interface Metadata {
+  sources: Source[];
+  metrics: Metric[];
+}
+
+export interface Profile {
+  uuid: string;
+  name: string;
+  metadata: Metadata;
+  journals: Journal[];
+  reports: Report[];
+  consultations: Consultation[];
+  metrics: MetricValue[];
 }

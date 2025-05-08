@@ -1,7 +1,6 @@
 import type { Profile } from './types';
 import { parseTitle, parseOrgId } from './org';
 
-
 async function readFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
