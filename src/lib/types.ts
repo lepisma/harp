@@ -1,5 +1,6 @@
 export interface Metric {
   id: string;
+  name: string,
   unit: string;
   tags: string[];
   range?: [number, number];

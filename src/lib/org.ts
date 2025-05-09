@@ -1,6 +1,16 @@
 // Org parsing and formatting functions
 
-import type { MetricValue } from "./types";
+import type { Consultation, Journal, Metadata, MetricValue, Profile, Report } from "./types";
+
+interface OrgNode {
+  id?: string;
+  datetime?: Date;
+  level: number;
+  title: string;
+  tags: string[];
+  props: object;
+  content: string;
+}
 
 export function parseTitle(orgString: string): string | null {
   const titleMatch = orgString.match(/^#\+TITLE:\s*(.*)$/mi);
@@ -51,4 +61,220 @@ export function parseMetricValues(orgString: string, datetime: Date, reference: 
       reference
     };
   });
+}
+
+
+function formatTags(tags: string[]): string {
+  if (tags.length > 0) {
+    return `:${tags.join(':')}:`;
+  } else {
+    return '';
+  }
+}
+
+/*
+ * Format as inactive org timestamps. This is primarily for use in properties blocks.
+ */
+function formatDatetimeForOrg(dt: Date): string {
+  const year = dt.getFullYear();
+  const month = (dt.getMonth() + 1).toString().padStart(2, '0');
+  const day = dt.getDate().toString().padStart(2, '0');
+  const hours = dt.getHours().toString().padStart(2, '0');
+  const minutes = dt.getMinutes().toString().padStart(2, '0');
+
+  // Check if the time components are all zeros, indicating a date-only value
+  if (dt.getHours() === 0 && dt.getMinutes() === 0 && dt.getSeconds() === 0 && dt.getMilliseconds() === 0) {
+    return `[${year}-${month}-${day}]`;
+  } else {
+    return `[${year}-${month}-${day} ${hours}:${minutes}]`;
+  }
+}
+
+/*
+ * Format an org node with heading etc.
+ */
+function formatNode(node: OrgNode): string {
+  let titleLine = `${'*'.repeat(node.level)} ${node.title}    ${formatTags(node.tags)}`;
+  let props = {...node.props};
+  if (node.id) {
+    props['ID'] = node.id;
+  }
+  if (node.datetime) {
+    props['DATETIME'] = formatDatetimeForOrg(node.datetime);
+  }
+
+  let propLines = [];
+  for (const [key, value] of Object.entries(props)) {
+    propLines.push(`:${key}:  ${value}`);
+  }
+
+  let propBlock = '';
+
+  if (propLines.length > 0) {
+    propBlock = `:PROPERTIES:
+${propLines.join('\n')}
+:END:`;
+  }
+
+  return `${titleLine}\n${propBlock ? propBlock + '\n' : ''}\n${node.content}`;
+}
+
+function formatPreamble(profile: Profile): string {
+  return `:PROPERTIES:
+:ID: ${profile.uuid}
+:END:
+#+TITLE: ${profile.name}`;
+}
+
+function formatSection(title: string, children: OrgNode[], level: number = 1): string {
+  return `${'*'.repeat(level)} ${title}\n${children.map(formatNode).join('\n\n')}`;
+}
+
+function formatMetadata(metadata: Metadata): string {
+  let sourceNode = {
+    level: 2,
+    title: 'Sources',
+    tags: [],
+    props: {},
+    content: metadata.sources.map(source => `- ${source.id} :: ${source.description}`).join('\n')
+  }
+
+  let metricNodes: OrgNode[] = metadata.metrics.map(m => {
+    let props = {
+      'TAG_ID': m.id,
+      'UNIT': m.unit,
+    };
+
+    if (m.range) {
+      props['RANGE'] = `${m.range[0]}-${m.range[1]}`;
+    }
+
+    if (m.healthyRange) {
+      props['HEALTHY_RANGE'] = `${m.healthyRange[0]}-${m.healthyRange[1]}`;
+    }
+
+    return {
+      tags: m.tags,
+      props,
+      level: 3,
+      title: m.name,
+      content: ''
+    };
+  });
+
+  let metricsNode = {
+    level: 2,
+    title: 'Metrics',
+    tags: [],
+    props: {},
+    content: metricNodes.map(formatNode).join('\n\n')
+  };
+
+  return formatSection('Metadata', [sourceNode, metricsNode]);
+}
+
+function formatJournals(journals: Journal[]): string {
+  let journalNodes = [];
+
+  for (const journal of journals) {
+    let entryNodes = [];
+
+    for (const entry of journal.entries) {
+      let tags = entry.tags;
+      if (entry.assets.length > 0) {
+        tags.push('ATTACH');
+      }
+
+      let entryNode = {
+        id: entry.uuid,
+        datetime: entry.datetime,
+        level: 3,
+        title: 'Entry',
+        tags: entry.tags,
+        props: {
+          'PRIVATE': entry.isPrivate ? 't' : 'nil'
+        },
+        content: entry.text
+      };
+
+      entryNodes.push(entryNode);
+    }
+
+    let journalNode = {
+      level: 2,
+      title: journal.name,
+      tags: [],
+      props: {},
+      content: entryNodes.map(formatNode).join('\n\n'),
+    };
+    journalNodes.push(journalNode);
+  }
+
+  return formatSection('Journals', journalNodes);
+}
+
+function formatReports(reports: Report[]): string {
+  return formatSection('Reports', reports.map(r => {
+    let tags = r.tags;
+
+    if (r.assets.length > 0) {
+      tags.push('ATTACH');
+    }
+
+    return {
+      id: r.uuid,
+      datetime: r.datetime,
+      level: 2,
+      title: r.name,
+      tags,
+      props: {
+        'SOURCE': r.source.id
+      },
+      content: r.annotation || ''  // No need to parse metric values since they
+                                   // are stored in the annotation itself
+    };
+  }));
+}
+
+function formatConsultations(consultations: Consultation[]): string {
+  return formatSection('Consultations', consultations.map(c => {
+    let tags = c.tags;
+
+    if (c.assets.length > 0) {
+      tags.push('ATTACH');
+    }
+
+    return {
+      id: c.uuid,
+      datetime: c.datetime,
+      level: 2,
+      title: c.name,
+      tags,
+      props: {
+        'SOURCE': c.source.id
+      },
+      content: c.annotation || ''
+    };
+  }));
+}
+
+// Convert profile to a single Org Mode file for export
+export function formatProfile(profile: Profile): string {
+  let preamble = formatPreamble(profile);
+  let metadata = formatMetadata(profile.metadata);
+  let journals = formatJournals(profile.journals);
+  let reports = formatReports(profile.reports);
+  let consultations = formatConsultations(profile.consultations);
+  // metricValues are derived, so not formatting them separately. Note that
+  // metric definitions are in metadata.
+
+  return `${preamble}
+
+${metadata}
+
+${journals}
+
+${reports}
+
+${consultations}`;
 }

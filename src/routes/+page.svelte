@@ -16,6 +16,7 @@
 
   import JournalForm from '$lib/components/journal-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
+  import { formatProfile } from '$lib/org';
 
   let db = $state({});
   let profile = $state(newProfile(undefined));
@@ -24,6 +25,18 @@
 
   let selectedTab = $state('journal');
   let isJournalFormOpen = $state(false);
+
+  function exportProfile() {
+    // For now just generating a single org file
+    const blob = new Blob([formatProfile(profile)], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    window.open(url, '_blank');
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 100);
+  }
 
   async function handleNewJournalEntry(entry) {
     profile.journals[0].entries.push(entry);
@@ -96,12 +109,12 @@
           </button>
         </div>
         <div>
-          <button type="button" disabled class="btn btn-sm preset-filled">
-            <span>Export Dump</span>
+          <button type="button" onclick={exportProfile} class="btn btn-sm preset-filled">
+            <span>Export</span>
             <IconDownload size={14} />
           </button>
           <button type="button" disabled class="btn btn-sm preset-outlined">
-            <span>Import Dump</span>
+            <span>Import</span>
             <IconUpload size={14} />
           </button>
         </div>
