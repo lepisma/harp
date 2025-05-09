@@ -90,17 +90,17 @@
     <main class="col-span-1 p-4">
       <div class="mb-5 flex items-center justify-between gap-2">
         <div>
-          <button type="button" class="btn btn-sm preset-filled">
+          <button type="button" disabled class="btn btn-sm preset-filled">
             <span>Share Selection</span>
             <IconScrollText size={14} />
           </button>
         </div>
         <div>
-          <button type="button" class="btn btn-sm preset-filled">
+          <button type="button" disabled class="btn btn-sm preset-filled">
             <span>Export Dump</span>
             <IconDownload size={14} />
           </button>
-          <button type="button" class="btn btn-sm preset-outlined">
+          <button type="button" disabled class="btn btn-sm preset-outlined">
             <span>Import Dump</span>
             <IconUpload size={14} />
           </button>
