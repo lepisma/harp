@@ -1,7 +1,17 @@
 <script lang="ts">
   import IconTrash from '@lucide/svelte/icons/trash-2';
+  import IconPencil from '@lucide/svelte/icons/pencil';
+  import JournalForm from '$lib/components/journal-form.svelte';
+  import type { JournalEntry } from '$lib/types';
 
-  let { entry, onDelete } = $props();
+  let { entry, onDelete, onEdit } = $props();
+
+  let isEditFormOpen = $state(false);
+
+  function handleSave(editedEntry: JournalEntry) {
+    onEdit(editedEntry);
+    isEditFormOpen = false;
+  }
 </script>
 
 <div class:blurred={entry.isPrivate} class="bg-white rounded-md shadow-md py-5">
@@ -11,7 +21,8 @@
         {entry.datetime}
       </span>
       <span class="pr-2">
-        <button type="button" onclick={() => onDelete(entry)} class="btn-icon preset-filled"><IconTrash size={18} /></button>
+        <button type="button" onclick={() => isEditFormOpen = true} class="btn-icon preset-filled"><IconPencil size={18} /></button>
+        <button type="button" onclick={() => onDelete(entry)} class="btn-icon preset-outlined"><IconTrash size={18} /></button>
       </span>
     </header>
     <p class="p-5">
@@ -34,3 +45,7 @@
     </small>
   </footer>
 </div>
+
+{#if isEditFormOpen}
+  <JournalForm entry={ entry } title='Edit entry' onSave={handleSave} onClose={() => isEditFormOpen = false } />
+{/if}

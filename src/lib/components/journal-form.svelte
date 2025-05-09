@@ -1,11 +1,19 @@
 <script lang="ts">
+  import type { JournalEntry } from '$lib/types';
   import { fly } from 'svelte/transition';
+  import { v4 as uuidv4 } from 'uuid';
 
-  let { onSave, onClose, title = 'New Entry' } = $props();
+  let { onSave, onClose, title = 'New Entry', entry = null } = $props();
 
   let text = $state('');
   let tagsText = $state('');
   let datetime = $state(formatDateForInput(new Date()));
+
+  if (entry !== null) {
+    text = entry.text;
+    tagsText = entry.tags.join(',');
+    datetime = formatDateForInput(entry.datetime);
+  }
 
   function formatDateForInput(date: Date): string {
     const year = date.getFullYear();
@@ -17,11 +25,17 @@
   }
 
   function handleSave() {
-    onSave({
-      text,
+    let editedEntry: JournalEntry = {
+      datetime: new Date(datetime),
+      uuid: entry === null ? uuidv4() : entry.uuid,  // Preserving the uuid in case of edits
       tags: tagsText.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
-      datetime: new Date(datetime)
-    });
+      metrics: [],
+      text,
+      assets: [],
+      isPrivate: false
+    }
+    entry = editedEntry;
+    onSave(entry);
   }
 </script>
 

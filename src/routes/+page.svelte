@@ -11,8 +11,7 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { JournalEntry, Profile } from '$lib/types';
-  import { v4 as uuidv4 } from 'uuid';
+  import type { JournalEntry } from '$lib/types';
   import { newProfile } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
@@ -26,17 +25,7 @@
   let selectedTab = $state('journal');
   let isJournalFormOpen = $state(false);
 
-  async function handleNewJournalEntry(data) {
-    let entry = {
-      datetime: data.datetime,
-      uuid: uuidv4(),
-      tags: data.tags,
-      metrics: [],
-      text: data.text,
-      assets: [],
-      isPrivate: false
-    }
-
+  async function handleNewJournalEntry(entry) {
     profile.journals[0].entries.push(entry);
 
     let clonedProfile = JSON.parse(JSON.stringify(profile));
@@ -59,6 +48,17 @@
 
       await saveProfile(db, clonedProfile);
     }
+  }
+
+  async function handleEditJournalEntry(entry: JournalEntry) {
+    profile.journals[0].entries = profile.journals[0].entries.map(e => (e.uuid === entry.uuid) ? entry : e);
+
+    let clonedProfile = JSON.parse(JSON.stringify(profile));
+    clonedProfile.journals[0].entries.forEach(entry => {
+      entry.datetime = new Date(entry.datetime);
+    })
+
+    await saveProfile(db, clonedProfile);
   }
 
   onMount(async () => {
@@ -154,7 +154,7 @@
 
             <div class="grid gap-4 md:grid-cols-1">
               {#each journal.entries as entry}
-                <JournalEntryCard entry={ entry } onDelete={handleDeleteJournalEntry} />
+                <JournalEntryCard entry={ entry } onDelete={handleDeleteJournalEntry} onEdit={handleEditJournalEntry} />
               {/each}
             </div>
           </Tabs.Panel>
