@@ -21,7 +21,7 @@
   let db = $state({});
   let profile = $state(newProfile(undefined));
   let journal = $derived(profile.journals[0]);
-  let tags = $state(['heart', 'cholesterol', 'hehe']);
+  let tags = $state(['heart', 'cholesterol']);
 
   let selectedTab = $state('journal');
   let isJournalFormOpen = $state(false);
