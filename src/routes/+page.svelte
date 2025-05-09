@@ -166,7 +166,7 @@
             {/if}
 
             <div class="grid gap-4 md:grid-cols-1">
-              {#each [...journal.entries].reverse() as entry}
+              {#each [...journal.entries].sort((a, b) => a.datetime < b.datetime) as entry}
                 <JournalEntryCard entry={ entry } onDelete={handleDeleteJournalEntry} onEdit={handleEditJournalEntry} />
               {/each}
             </div>
