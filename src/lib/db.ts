@@ -43,8 +43,19 @@ export async function saveAsset(db: IDBPDatabase<HarpDB>, parentId: string, asse
   await db.put('assets', data, assetId);
 }
 
-export async function loadProfiles(db: IDBPDatabase<HarpDB>): Promise<Profile[]> {
-  return await db.getAll('profiles');
+export async function loadProfileList(db: IDBPDatabase<HarpDB>): Promise<string[][]> {
+  let profiles = await db.getAll('profiles');
+  return profiles.map(p => [p.uuid, p.name]);
+}
+
+export async function loadProfile(db: IDBPDatabase<HarpDB>, profileId: string): Promise<Profile> {
+  let profile = await db.get('profiles', profileId);
+
+  if (!profile) {
+    throw Error(`Unable to read profile ${profileId}`);
+  }
+
+  return profile;
 }
 
 export async function saveProfile(db: IDBPDatabase<HarpDB>, profile: Profile) {

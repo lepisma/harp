@@ -14,7 +14,7 @@
   }
 </script>
 
-<div class:blurred={entry.isPrivate} class="bg-white rounded-md shadow-md py-5">
+<div class:blurred={entry.isPrivate} class="rounded-md shadow-md py-5">
   <article class="space-y-2">
     <header class="flex items-center justify-between">
       <span class="text-sm bg-gray-100 my-2 p-1 px-5">
