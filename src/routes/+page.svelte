@@ -45,6 +45,7 @@
     })
 
     await saveProfile(db, clonedProfile);
+    isJournalFormOpen = false;
   }
 
   async function handleDeleteJournalEntry(entry: JournalEntry) {
@@ -58,10 +59,6 @@
 
       await saveProfile(db, clonedProfile);
     }
-  }
-
-  function openPopup() {
-    isJournalFormOpen = true;
   }
 
   onMount(async () => {
@@ -145,13 +142,15 @@
           {#snippet content()}
           <Tabs.Panel value="journal">
             <div class="mb-4">
-              <button type="button" onclick={openPopup} class="btn btn-sm preset-outlined">
+              <button type="button" onclick={() => isJournalFormOpen = true} class="btn btn-sm preset-outlined">
                 <span>New Entry</span>
                 <IconPlus size={18} />
               </button>
             </div>
 
-            <JournalForm open={isJournalFormOpen} onSave={handleNewJournalEntry} />
+            {#if isJournalFormOpen}
+              <JournalForm onSave={handleNewJournalEntry} onClose={() => isJournalFormOpen = false} />
+            {/if}
 
             <div class="grid gap-4 md:grid-cols-1">
               {#each journal.entries as entry}
