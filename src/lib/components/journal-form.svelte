@@ -1,17 +1,22 @@
 <script lang="ts">
-  import type { JournalEntry } from '$lib/types';
+  import { parseMetricValues, parseTags } from '$lib/org';
+  import type { JournalEntry, MetricValue } from '$lib/types';
   import { fly } from 'svelte/transition';
   import { v4 as uuidv4 } from 'uuid';
 
   let { onSave, onClose, title = 'New Entry', entry = null } = $props();
 
+  let uuid = $state(uuidv4());
   let text = $state('');
-  let tagsText = $state('');
+  let tags: string[] = $state([]);
+  let metricValues: MetricValue[] = $state([]);
   let datetime = $state(formatDateForInput(new Date()));
 
   if (entry !== null) {
+    uuid = entry.uuid;
     text = entry.text;
-    tagsText = entry.tags.join(',');
+    tags = entry.tags;
+    metricValues = entry.metrics;
     datetime = formatDateForInput(entry.datetime);
   }
 
@@ -24,12 +29,18 @@
     return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
+  function handleInput(e) {
+    let text = e.target.value;
+    tags = parseTags(text);
+    metricValues = parseMetricValues(text, new Date(datetime), uuid);
+  }
+
   function handleSave() {
     let editedEntry: JournalEntry = {
       datetime: new Date(datetime),
-      uuid: entry === null ? uuidv4() : entry.uuid,  // Preserving the uuid in case of edits
-      tags: tagsText.split(',').map(tag => tag.trim()).filter(tag => tag !== ''),
-      metrics: [],
+      uuid,
+      tags,
+      metrics: metricValues,
       text,
       assets: [],
       isPrivate: false
@@ -54,18 +65,27 @@
 
     <label class="label mb-4">
       <span class="label-text">Datetime</span>
-      <input type="datetime-local" id="datetime" class="input" bind:value={datetime} />
+      <input type="datetime-local" id="datetime" class="input text-sm" bind:value={datetime} />
     </label>
 
     <label class="label mb-4">
-      <span class="label-text">Textarea</span>
-      <textarea class="textarea" id="text" bind:value={text} rows="4" placeholder="Text goes here"></textarea>
+      <span class="label-text">Content</span>
+      <textarea class="textarea" id="text" oninput={handleInput} bind:value={text} rows="4" placeholder="Text goes here"></textarea>
     </label>
 
-    <label class="label mb-4">
-      <span class="label-text">Tags (comma-separated)</span>
-      <input class="input" type="text" id="tags" bind:value={tagsText} placeholder="Input" />
-    </label>
+    {#if tags.length + metricValues.length > 0  }
+      <div class="mb-4">
+        <div class="text-xs">Tags and Metrics</div>
+        <div class="text-xs opacity-60 pt-2">
+          {#each tags as tag}
+            <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">#{tag}</span>
+          {/each}
+          {#each metricValues as mv}
+            <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">{mv.id} = {mv.value}</span>
+          {/each}
+        </div>
+      </div>
+    {/if}
 
     <div class="flex justify-end gap-2">
       <button type="button" class="btn preset-filled" onclick={handleSave}>Save</button>
