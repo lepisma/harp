@@ -12,7 +12,7 @@
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
   import type { JournalEntry } from '$lib/types';
-  import { newProfile } from '$lib/utils';
+  import { newProfile, profileTags } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
@@ -21,7 +21,7 @@
   let db = $state({});
   let profile = $state(newProfile(undefined));
   let journal = $derived(profile.journals[0]);
-  let tags = $state(['heart', 'cholesterol']);
+  let tags = $derived(profileTags(profile));
 
   let selectedTab = $state('journal');
   let isJournalFormOpen = $state(false);
