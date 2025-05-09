@@ -153,7 +153,7 @@
             {/if}
 
             <div class="grid gap-4 md:grid-cols-1">
-              {#each journal.entries as entry}
+              {#each [...journal.entries].reverse() as entry}
                 <JournalEntryCard entry={ entry } onDelete={handleDeleteJournalEntry} onEdit={handleEditJournalEntry} />
               {/each}
             </div>
