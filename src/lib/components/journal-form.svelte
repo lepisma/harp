@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
 
-  let { onSave, onClose } = $props();
+  let { onSave, onClose, title = 'New Entry' } = $props();
 
   let text = $state('');
   let tagsText = $state('');
@@ -36,7 +36,7 @@
       </svg>
     </button>
 
-    <h2 class="h5 mb-5">New Entry</h2>
+    <h2 class="h5 mb-5">{ title }</h2>
 
     <label class="label mb-4">
       <span class="label-text">Datetime</span>
@@ -54,7 +54,7 @@
     </label>
 
     <div class="flex justify-end">
-      <button type="button" class="btn variant-filled-primary" onclick={handleSave}>Save</button>
+      <button type="button" class="btn preset-filled" onclick={handleSave}>Save</button>
     </div>
   </div>
 </div>
