@@ -53,8 +53,9 @@
       <input class="input" type="text" id="tags" bind:value={tagsText} placeholder="Input" />
     </label>
 
-    <div class="flex justify-end">
+    <div class="flex justify-end gap-2">
       <button type="button" class="btn preset-filled" onclick={handleSave}>Save</button>
+      <button type="button" class="btn preset-outlined" onclick={onClose}>Discard</button>
     </div>
   </div>
 </div>
