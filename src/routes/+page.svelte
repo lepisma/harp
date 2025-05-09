@@ -13,27 +13,10 @@
   import { onMount } from 'svelte';
   import type { JournalEntry, Profile } from '$lib/types';
   import { v4 as uuidv4 } from 'uuid';
+  import { newProfile } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
-
-  function newProfile(name: string): Profile {
-    return {
-      uuid: uuidv4(),
-      name: name,
-      metadata: {
-        sources: [],
-        metrics: []
-      },
-      journals: [{
-        name: 'Main',
-        entries: []
-      }],
-      reports: [],
-      consultations: [],
-      metrics: [],
-    }
-  }
 
   let db = $state({});
   let profile = $state(newProfile(undefined));
