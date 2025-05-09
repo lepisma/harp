@@ -11,7 +11,7 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Profile } from '$lib/types';
+  import type { JournalEntry, Profile } from '$lib/types';
   import { v4 as uuidv4 } from 'uuid';
 
   import JournalForm from '$lib/components/journal-form.svelte';
@@ -62,6 +62,19 @@
     })
 
     await saveProfile(db, clonedProfile);
+  }
+
+  async function handleDeleteJournalEntry(entry: JournalEntry) {
+    if (window.confirm('Do you really want to delete this entry?')) {
+      profile.journals[0].entries = profile.journals[0].entries.filter(e => e.uuid !== entry.uuid);
+
+      let clonedProfile = JSON.parse(JSON.stringify(profile));
+      clonedProfile.journals[0].entries.forEach(entry => {
+        entry.datetime = new Date(entry.datetime);
+      })
+
+      await saveProfile(db, clonedProfile);
+    }
   }
 
   function openPopup() {
@@ -159,7 +172,7 @@
 
             <div class="grid gap-4 md:grid-cols-1">
               {#each journal.entries as entry}
-                <JournalEntryCard entry={ entry } />
+                <JournalEntryCard entry={ entry } onDelete={handleDeleteJournalEntry} />
               {/each}
             </div>
           </Tabs.Panel>

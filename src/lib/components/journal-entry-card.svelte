@@ -1,7 +1,7 @@
 <script lang="ts">
   import IconTrash from '@lucide/svelte/icons/trash-2';
 
-  let { entry } = $props();
+  let { entry, onDelete } = $props();
 </script>
 
 <div class:blurred={entry.isPrivate} class="bg-white rounded-md shadow-md py-5">
@@ -11,7 +11,7 @@
         {entry.datetime}
       </span>
       <span class="pr-2">
-        <button type="button" class="btn-icon preset-filled"><IconTrash size={18} /></button>
+        <button type="button" onclick={() => onDelete(entry)} class="btn-icon preset-filled"><IconTrash size={18} /></button>
       </span>
     </header>
     <p class="p-5">
