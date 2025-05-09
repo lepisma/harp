@@ -18,7 +18,7 @@
   <article class="space-y-2">
     <header class="flex items-center justify-between">
       <span class="text-sm bg-gray-100 my-2 p-1 px-5">
-        {entry.datetime}
+        {entry.datetime.toLocaleString()}
       </span>
       <span class="pr-2">
         <button type="button" onclick={() => isEditFormOpen = true} class="btn-icon preset-filled"><IconPencil size={18} /></button>
