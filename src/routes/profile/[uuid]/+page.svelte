@@ -13,7 +13,7 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Asset, JournalEntry, MetricValue } from '$lib/types';
+  import type { Asset, JournalEntry, Metric, MetricValue } from '$lib/types';
   import { profileMetricValues, profileTags } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
@@ -27,10 +27,9 @@
   let db = $state(null);
   let profile = $state(null);
   let journal = $derived(profile !== null ? profile.journals[0] : []);
-  let metrics = $derived(profile !== null ? profile.metadata.metrics : []);
-  let metricValuesMap = $derived(profile !== null ? profileMetricValues(profile) : {});
-
-  let tags = $derived(profile !== null ? profileTags(profile) : []);
+  let metrics: Metric[] = $derived(profile !== null ? profile.metadata.metrics : []);
+  let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
+  let tags: string[] = $derived(profile !== null ? profileTags(profile) : []);
 
   let selectedTab = $state('journal');
   let isJournalFormOpen = $state(false);
@@ -206,7 +205,7 @@
 
 <div class="grid gap-4 md:grid-cols-1">
   {#each metrics as metric}
-    <MetricCard metric={metric} metricValuesMap={metricValuesMap} onNewValue={onNewMetricValue} />
+    <MetricCard metric={metric} metricValues={metricValues} onNewValue={onNewMetricValue} />
   {/each}
 </div>
 </Tabs.Panel>

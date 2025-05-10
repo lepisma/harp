@@ -73,8 +73,6 @@ export interface Profile {
   journals: Journal[];
   reports: Report[];
   consultations: Consultation[];
-  // TODO: Decide how to keep this derived value
-  metricValues: MetricValue[];
 }
 
 export interface ProfileSummary {

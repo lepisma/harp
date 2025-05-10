@@ -1,35 +1,22 @@
 import type { MetricValue, Profile } from './types';
 
 /*
- * Collect all metric values from the profile and return a map of metric id to
-   metric values
+ * Collect all metric values from the profile
  */
-export function profileMetricValues(profile: Profile): Record<string, MetricValue[]> {
-  let metricValuesMap: Record<string, MetricValue[]> = {};
+export function profileMetricValues(profile: Profile): MetricValue[] {
+  let metricValues: MetricValue[] = [];
 
   for (const journal of profile.journals) {
     for (const entry of journal.entries) {
-      for (const mv of entry.metricValues) {
-        if (!Object.keys(metricValuesMap).includes(mv.id)) {
-          metricValuesMap[mv.id] = [];
-        }
-
-        metricValuesMap[mv.id].push(mv);
-      }
+      metricValues.push(...entry.metricValues);
     }
   }
 
   for (const report of profile.reports) {
-    for (const mv of report.metricValues) {
-      if (!Object.keys(metricValuesMap).includes(mv.id)) {
-        metricValuesMap[mv.id] = [];
-      }
-
-      metricValuesMap[mv.id].push(mv);
-    }
+    metricValues.push(...report.metricValues);
   }
 
-  return metricValuesMap;
+  return metricValues;
 }
 
 /*

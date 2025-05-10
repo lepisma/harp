@@ -4,21 +4,21 @@
   import IconPlus from '@lucide/svelte/icons/plus';
   import IconArrowRight from '@lucide/svelte/icons/arrow-right';
   import MetricForm from '$lib/components/metric-form.svelte';
+  import type { MetricValue } from '$lib/types';
 
-  let { metric, metricValuesMap, onNewValue } = $props();
+  let { metric, metricValues, onNewValue } = $props();
 
-  let latestValue = $derived.by(() => {
-    if (metricValuesMap[metric.id]) {
-      return metricValuesMap[metric.id].sort((a, b) => a.datetime < b.datetime)[0].value;
+  let relevantMetricValues: MetricValue[] = $derived(metricValues.filter(mv => mv.id === metric.id));
+
+  let latestValue: number | null = $derived.by(() => {
+    if (relevantMetricValues.length > 0) {
+      return relevantMetricValues.sort((a, b) => a.datetime < b.datetime)[0].value;
     } else {
       return null;
     }
   })
 
   let isEditFormOpen = $state(false);
-
-  function handleNewValue() {
-  }
 </script>
 
 <div class="rounded-md shadow-md py-5">
@@ -49,9 +49,9 @@
       </button>
     </div>
     <div class="px-5">
-      {#if metricValuesMap[metric.id]}
+      {#if relevantMetricValues}
         <ul>
-          {#each metricValuesMap[metric.id].sort((a, b) => a.datetime < b.datetime) as mv}
+          {#each relevantMetricValues.sort((a, b) => a.datetime < b.datetime) as mv}
             <li>
               <span>{mv.datetime.toLocaleString()}:</span>
               <span class="font-bold">{mv.value} {metric.unit}</span>
