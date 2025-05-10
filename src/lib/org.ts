@@ -180,7 +180,7 @@ function formatJournals(journals: Journal[]): string {
     let entryNodes = [];
 
     for (const entry of journal.entries) {
-      let tags = entry.tags;
+      let tags = [...entry.tags];
       if (entry.assets.length > 0) {
         tags.push('ATTACH');
       }
@@ -215,7 +215,7 @@ function formatJournals(journals: Journal[]): string {
 
 function formatReports(reports: Report[]): string {
   return formatSection('Reports', reports.map(r => {
-    let tags = r.tags;
+    let tags = [...r.tags];
 
     if (r.assets.length > 0) {
       tags.push('ATTACH');
@@ -238,7 +238,7 @@ function formatReports(reports: Report[]): string {
 
 function formatConsultations(consultations: Consultation[]): string {
   return formatSection('Consultations', consultations.map(c => {
-    let tags = c.tags;
+    let tags = [...c.tags];
 
     if (c.assets.length > 0) {
       tags.push('ATTACH');
