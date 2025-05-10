@@ -75,9 +75,19 @@ export async function saveProfile(db: Database, profile: Profile) {
   // Since we might be taking svelte profile, we ensure that the db write gets a
   // proper object. Otherwise the write fails.
   let clonedProfile: Profile = JSON.parse(JSON.stringify(profile));
+
+  // Datetime needs to be recovered as objects for this
   clonedProfile.journals[0].entries.forEach(entry => {
     entry.datetime = new Date(entry.datetime);
+    entry.metricValues = entry.metricValues.map(mv => {return {...mv, datetime: new Date(mv.datetime)}});
   })
+
+  clonedProfile.reports = clonedProfile.reports.map(r => {
+    return {
+      ...r,
+      metricValues: r.metricValues.map(mv => {return {...mv, datetime: new Date(mv.datetime)}})
+    }
+  });
 
   await db.put('profiles', clonedProfile);
 }
