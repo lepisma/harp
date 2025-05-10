@@ -10,7 +10,10 @@ interface HarpDB extends DBSchema {
   },
   'assets': {
     key: string;
-    value: Blob;
+    value: {
+      id: string;
+      data: Blob;
+    };
   }
 }
 

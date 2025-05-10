@@ -4,7 +4,7 @@
   import JournalForm from '$lib/components/journal-form.svelte';
   import type { JournalEntry } from '$lib/types';
 
-  let { entry, onDelete, onEdit } = $props();
+  let { entry, onDelete, onEdit, onAssetUpload } = $props();
 
   let isEditFormOpen = $state(false);
 
@@ -47,5 +47,5 @@
 </div>
 
 {#if isEditFormOpen}
-  <JournalForm entry={ entry } title='Edit entry' onSave={handleSave} onClose={() => isEditFormOpen = false } />
+  <JournalForm entry={ entry } title='Edit entry' onSave={handleSave} onAssetUpload={onAssetUpload} onClose={() => isEditFormOpen = false } />
 {/if}

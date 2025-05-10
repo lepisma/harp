@@ -1,19 +1,20 @@
 <script lang="ts">
   import { parseMetricValues, parseTags } from '$lib/org';
-  import type { JournalEntry, MetricValue } from '$lib/types';
+  import type { Asset, JournalEntry, MetricValue } from '$lib/types';
   import { fly } from 'svelte/transition';
   import { v4 as uuidv4 } from 'uuid';
   import IconCamera from '@lucide/svelte/icons/camera';
   import IconVideo from '@lucide/svelte/icons/video';
   import IconPaperclip from '@lucide/svelte/icons/paperclip';
 
-  let { onSave, onClose, title = 'New Entry', entry = null } = $props();
+  let { onSave, onClose, title = 'New Entry', onAssetUpload, entry = null } = $props();
 
   let uuid = $state(uuidv4());
   let text = $state('');
   let tags: string[] = $state([]);
   let metricValues: MetricValue[] = $state([]);
   let datetime = $state(formatDateForInput(new Date()));
+  let assets: Asset[] = $state([]);
 
   if (entry !== null) {
     uuid = entry.uuid;
@@ -45,11 +46,48 @@
       tags,
       metricValues,
       text,
-      assets: [],
+      assets,
       isPrivate: false
     }
     entry = editedEntry;
     onSave(entry);
+  }
+
+  async function handleFileUpload() {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.style.display = 'none';
+
+    fileInput.addEventListener('change', async (event) => {
+      document.body.removeChild(fileInput);
+      const files = (event.target as HTMLInputElement).files;
+
+      if (files && files.length > 0) {
+        const selectedFile = files[0];
+        const asset: Asset = {
+          fileName: selectedFile.name,
+          mimeType: selectedFile.type || undefined
+        };
+        const data: Blob = selectedFile;
+
+        let textarea = document.getElementById('text');
+
+        // Try to insert at cursor, or just at the end
+        const insertAt = textarea.selectionEnd;
+        if (insertAt) {
+          text = text.substring(0, insertAt) + `[[attachment:${asset.fileName}]]` + text.substring(insertAt);
+        } else {
+          text += `[[attachment:${asset.fileName}]]`;
+        }
+
+        assets.push(asset);
+
+        await onAssetUpload(asset, uuid, data);
+      };
+    });
+
+    document.body.appendChild(fileInput);
+    fileInput.click();
   }
 </script>
 
@@ -79,7 +117,7 @@
     <div class="flex gap-2 mb-4">
       <button disabled class="btn-sm preset-outlined rounded-md" title="Insert photo from camera"><IconCamera size={18} /></button>
       <button disabled class="btn-sm preset-outlined rounded-md" title="Insert video from camera"><IconVideo size={18} /></button>
-      <button disabled class="btn-sm preset-outlined rounded-md" title="Insert a file"><IconPaperclip size={18} /></button>
+      <button onclick={handleFileUpload} class="btn-sm preset-outlined rounded-md" title="Insert a file"><IconPaperclip size={18} /></button>
     </div>
 
     {#if tags.length + metricValues.length > 0  }

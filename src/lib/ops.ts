@@ -53,12 +53,17 @@ export async function loadProfile(db: Database, profileId: string): Promise<Prof
 
 export async function loadAsset(db: Database, parentId: string, asset: Asset): Promise<Blob | undefined> {
   let assetId = `${parentId}-${asset.fileName}`;
-  return await db.get('assets', assetId);
+  let result = await db.get('assets', assetId);
+  if (result) {
+    return result.data;
+  } else {
+    return undefined;
+  }
 }
 
 export async function saveAsset(db: Database, parentId: string, asset: Asset, data: Blob) {
   let assetId = `${parentId}-${asset.fileName}`;
-  await db.put('assets', data, assetId);
+  await db.put('assets', { id: assetId, data });
 }
 
 export async function loadProfileSummaries(db: Database): Promise<ProfileSummary[]> {

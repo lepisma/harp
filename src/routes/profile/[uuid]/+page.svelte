@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { loadDB } from '$lib/db';
-  import { loadProfile, saveProfile } from '$lib/ops';
+  import { loadProfile, saveAsset, saveProfile } from '$lib/ops';
   import { Tabs } from '@skeletonlabs/skeleton-svelte';
   import IconNotepadText from '@lucide/svelte/icons/notepad-text';
   import IconChartScatter from '@lucide/svelte/icons/chart-scatter';
@@ -13,7 +13,7 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { JournalEntry } from '$lib/types';
+  import type { Asset, JournalEntry } from '$lib/types';
   import { profileTags } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
@@ -66,6 +66,10 @@
       profile.journals[0].entries = profile.journals[0].entries.map(e => (e.uuid === entry.uuid) ? entry : e);
       await saveProfile(db, profile);
     }
+  }
+
+  async function handleAssetUpload(asset: Asset, parentId: string, data: Blob) {
+    await saveAsset(db, parentId, asset, data);
   }
 
   onMount(async () => {
@@ -145,12 +149,12 @@
               </div>
 
               {#if isJournalFormOpen}
-                <JournalForm onSave={handleNewJournalEntry} onClose={() => isJournalFormOpen = false} />
+                <JournalForm onSave={handleNewJournalEntry} onClose={() => isJournalFormOpen = false} onAssetUpload={handleAssetUpload} />
               {/if}
 
               <div class="grid gap-4 md:grid-cols-1">
                 {#each [...journal.entries].sort((a, b) => a.datetime < b.datetime) as entry}
-                  <JournalEntryCard entry={ entry } onDelete={handleDeleteJournalEntry} onEdit={handleEditJournalEntry} />
+                  <JournalEntryCard entry={ entry } onDelete={handleDeleteJournalEntry} onEdit={handleEditJournalEntry} onAssetUpload={handleAssetUpload} />
                 {/each}
               </div>
             </Tabs.Panel>
