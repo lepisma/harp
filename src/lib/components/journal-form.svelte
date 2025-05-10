@@ -3,6 +3,9 @@
   import type { JournalEntry, MetricValue } from '$lib/types';
   import { fly } from 'svelte/transition';
   import { v4 as uuidv4 } from 'uuid';
+  import IconCamera from '@lucide/svelte/icons/camera';
+  import IconVideo from '@lucide/svelte/icons/video';
+  import IconPaperclip from '@lucide/svelte/icons/paperclip';
 
   let { onSave, onClose, title = 'New Entry', entry = null } = $props();
 
@@ -70,8 +73,14 @@
 
     <label class="label mb-4">
       <span class="label-text">Content</span>
-      <textarea class="textarea" id="text" oninput={handleInput} bind:value={text} rows="4" placeholder="Text goes here"></textarea>
+      <textarea class="textarea" id="text" oninput={handleInput} bind:value={text} rows="4" placeholder=""></textarea>
     </label>
+
+    <div class="flex gap-2 mb-4">
+      <button disabled class="btn-sm preset-outlined rounded-md" title="Insert photo from camera"><IconCamera size={18} /></button>
+      <button disabled class="btn-sm preset-outlined rounded-md" title="Insert video from camera"><IconVideo size={18} /></button>
+      <button disabled class="btn-sm preset-outlined rounded-md" title="Insert a file"><IconPaperclip size={18} /></button>
+    </div>
 
     {#if tags.length + metricValues.length > 0  }
       <div class="mb-4">
