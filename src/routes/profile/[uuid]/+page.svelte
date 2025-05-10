@@ -43,8 +43,12 @@
   }
 
   async function handleNewJournalEntry(entry) {
-    profile.journals[0].entries.push(entry);
-    await saveProfile(db, profile);
+    // Entry could be empty. We ignore them here
+    if (entry.text !== '') {
+      profile.journals[0].entries.push(entry);
+      await saveProfile(db, profile);
+    }
+
     isJournalFormOpen = false;
   }
 
