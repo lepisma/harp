@@ -44,38 +44,20 @@
 
   async function handleNewJournalEntry(entry) {
     profile.journals[0].entries.push(entry);
-
-    let clonedProfile = JSON.parse(JSON.stringify(profile));
-    clonedProfile.journals[0].entries.forEach(entry => {
-      entry.datetime = new Date(entry.datetime);
-    })
-
-    await saveProfile(db, clonedProfile);
+    await saveProfile(db, profile);
     isJournalFormOpen = false;
   }
 
   async function handleDeleteJournalEntry(entry: JournalEntry) {
     if (window.confirm('Do you really want to delete this entry?')) {
       profile.journals[0].entries = profile.journals[0].entries.filter(e => e.uuid !== entry.uuid);
-
-      let clonedProfile = JSON.parse(JSON.stringify(profile));
-      clonedProfile.journals[0].entries.forEach(entry => {
-        entry.datetime = new Date(entry.datetime);
-      })
-
-      await saveProfile(db, clonedProfile);
+      await saveProfile(db, profile);
     }
   }
 
   async function handleEditJournalEntry(entry: JournalEntry) {
     profile.journals[0].entries = profile.journals[0].entries.map(e => (e.uuid === entry.uuid) ? entry : e);
-
-    let clonedProfile = JSON.parse(JSON.stringify(profile));
-    clonedProfile.journals[0].entries.forEach(entry => {
-      entry.datetime = new Date(entry.datetime);
-    })
-
-    await saveProfile(db, clonedProfile);
+    await saveProfile(db, profile);
   }
 
   onMount(async () => {

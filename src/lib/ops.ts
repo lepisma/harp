@@ -67,5 +67,12 @@ export async function loadProfileSummaries(db: Database): Promise<ProfileSummary
 }
 
 export async function saveProfile(db: Database, profile: Profile) {
-  await db.put('profiles', profile);
+  // Since we might be taking svelte profile, we ensure that the db write gets a
+  // proper object. Otherwise the write fails.
+  let clonedProfile: Profile = JSON.parse(JSON.stringify(profile));
+  clonedProfile.journals[0].entries.forEach(entry => {
+    entry.datetime = new Date(entry.datetime);
+  })
+
+  await db.put('profiles', clonedProfile);
 }
