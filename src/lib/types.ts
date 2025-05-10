@@ -24,7 +24,7 @@ export interface JournalEntry {
   datetime: Date;
   uuid: string;
   tags: string[];
-  metrics: MetricValue[];
+  metricValues: MetricValue[];
   text: string;
   assets: Asset[];
   isPrivate: boolean;
@@ -47,7 +47,7 @@ export interface Report {
   tags: string[];
   source: Source;
   assets: Asset[];
-  metrics: MetricValue[];
+  metricValues: MetricValue[];
   annotation?: string;
 }
 
@@ -73,5 +73,18 @@ export interface Profile {
   journals: Journal[];
   reports: Report[];
   consultations: Consultation[];
-  metrics: MetricValue[];
+  metricValues: MetricValue[];
+}
+
+export interface ProfileSummary {
+  uuid: string;
+  name: string;
+  metadata: Metadata;
+  counts: {
+    journals: number;
+    journalEntries: number;
+    reports: number;
+    consultations: number;
+    metricValues: number;
+  }
 }

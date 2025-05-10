@@ -16,7 +16,7 @@
     uuid = entry.uuid;
     text = entry.text;
     tags = entry.tags;
-    metricValues = entry.metrics;
+    metricValues = entry.metricValues;
     datetime = formatDateForInput(entry.datetime);
   }
 
@@ -40,7 +40,7 @@
       datetime: new Date(datetime),
       uuid,
       tags,
-      metrics: metricValues,
+      metricValues,
       text,
       assets: [],
       isPrivate: false

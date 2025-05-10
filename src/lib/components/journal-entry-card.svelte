@@ -36,7 +36,7 @@
       {/each}
     </small>
     <small class="text-gray-500 pr-2">
-      {#if entry.metrics.length > 0 }
+      {#if entry.metricValues.length > 0 }
         <span class="rounded-md bg-gray-100 px-2">Metrics</span>
       {/if}
       {#if entry.assets.length > 0 }

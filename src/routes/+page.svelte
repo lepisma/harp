@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { loadDB, loadProfileList, saveProfile } from '$lib/db';
+  import { loadDB, type Database } from '$lib/db';
+  import { createNewProfile, loadProfileSummaries } from '$lib/ops';
   import { onMount } from 'svelte';
   import IconSquarePlus from '@lucide/svelte/icons/square-plus';
   import IconUser from '@lucide/svelte/icons/user';
-    import { newProfile } from '$lib/utils';
-    import { goto } from '$app/navigation';
+  import { goto } from '$app/navigation';
+  import type { ProfileSummary } from '$lib/types';
 
-  let db = $state({});
-  let profileList: string[][] = $state([]);
+  let db: Database | null = $state(null);
+  let profileSummaries: ProfileSummary[] = $state([]);
 
   let profileName: string = $state('');
 
@@ -15,15 +16,14 @@
     if (profileName === '') {
       alert('Please input name of the new profile!');
     } else {
-      let profile = newProfile(profileName);
-      await saveProfile(db, profile);
+      let profile = await createNewProfile(db, profileName);
       await goto(`/profile/${profile.uuid}`);
     }
   }
 
   onMount(async () => {
     db = await loadDB();
-    profileList = await loadProfileList(db);
+    profileSummaries = await loadProfileSummaries(db);
   });
 
 </script>
@@ -36,9 +36,9 @@
 
     <main class="col-span-1 p-4">
       <div class="w-full grid grid-cols-2 gap-4 mb-5">
-        {#each profileList as profile}
-          <a href={`/profile/${profile[0]}`}>
-            <div class="flex gap-3 card p-4 preset-filled-primary-500 grid-cols-[1fr_auto]"><IconUser /> {profile[1]}</div>
+        {#each profileSummaries as summary}
+          <a href={`/profile/${summary.uuid}`}>
+            <div class="flex gap-3 card p-4 preset-filled-primary-500 grid-cols-[1fr_auto]"><IconUser /> {summary.name}</div>
           </a>
         {/each}
       </div>
