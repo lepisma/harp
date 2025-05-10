@@ -43,8 +43,8 @@ export async function createNewProfile(db: Database, profileName: string): Promi
   return profile;
 }
 
-export async function deleteProfile(db: Database, profile: Profile) {
-  await db.delete('profiles', profile.uuid);
+export async function deleteProfile(db: Database, profileId: string) {
+  await db.delete('profiles', profileId);
 }
 
 export async function loadProfile(db: Database, profileId: string): Promise<Profile | undefined> {

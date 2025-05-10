@@ -1,9 +1,10 @@
 <script lang="ts">
   import { loadDB, type Database } from '$lib/db';
-  import { createNewProfile, loadProfileSummaries } from '$lib/ops';
+  import { createNewProfile, loadProfileSummaries, deleteProfile } from '$lib/ops';
   import { onMount } from 'svelte';
   import IconSquarePlus from '@lucide/svelte/icons/square-plus';
   import IconUser from '@lucide/svelte/icons/user';
+  import IconTrash from '@lucide/svelte/icons/trash';
   import { goto } from '$app/navigation';
   import type { ProfileSummary } from '$lib/types';
 
@@ -18,6 +19,13 @@
     } else {
       let profile = await createNewProfile(db, profileName);
       await goto(`/profile/${profile.uuid}`);
+    }
+  }
+
+  async function onDelete(profileId: string) {
+    if (window.confirm('Do you really want to delete this profile?')) {
+      await deleteProfile(db, profileId);
+      profileSummaries = profileSummaries.filter(ps => ps.uuid !== profileId);
     }
   }
 
@@ -38,7 +46,20 @@
       <div class="w-full grid grid-cols-2 gap-4 mb-5">
         {#each profileSummaries as summary}
           <a href={`/profile/${summary.uuid}`}>
-            <div class="flex gap-3 card p-4 preset-filled-primary-500 grid-cols-[1fr_auto]"><IconUser /> {summary.name}</div>
+            <div class="flex justify-between card p-4 items-center preset-tonal-primary grid-cols-[1fr_auto]">
+              <span class="flex gap-3">
+                <IconUser /> {summary.name}
+              </span>
+              <button
+                onclick={async (event) => {
+                  event.preventDefault();
+                  await onDelete(summary.uuid);
+                }}
+                class="ig-btn preset-tonal-surface rounded-md"
+                >
+                <IconTrash size={18} />
+              </button>
+            </div>
           </a>
         {/each}
       </div>
