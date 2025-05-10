@@ -50,3 +50,19 @@ export function triggerDownload(data: Blob, fileName: string) {
     URL.revokeObjectURL(url);
   }, 100);
 }
+
+export function triggerOpen(data: Blob) {
+  const url = URL.createObjectURL(data);
+
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.target = '_blank';
+
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+}

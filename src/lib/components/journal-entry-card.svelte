@@ -3,7 +3,7 @@
   import IconPencil from '@lucide/svelte/icons/pencil';
   import JournalForm from '$lib/components/journal-form.svelte';
   import type { JournalEntry } from '$lib/types';
-  import { triggerDownload } from '$lib/utils';
+  import { triggerOpen } from '$lib/utils';
 
   let { entry, onDelete, onEdit, onAssetUpload, readAsset } = $props();
 
@@ -12,7 +12,7 @@
   async function openAllAssets() {
     for (const asset of entry.assets) {
       let data = await readAsset(asset, entry.uuid);
-      triggerDownload(data, asset.fileName);
+      triggerOpen(data);
     }
   }
 
