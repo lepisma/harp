@@ -18,7 +18,7 @@ interface HarpDB extends DBSchema {
 }
 
 const DB_NAME = 'harp';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export type Database = IDBPDatabase<HarpDB>;
 
