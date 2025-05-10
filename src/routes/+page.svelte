@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { loadDB, type Database } from '$lib/db';
+  import { eraseDB, loadDB, type Database } from '$lib/db';
   import { createNewProfile, loadProfileSummaries, deleteProfile } from '$lib/ops';
   import { onMount } from 'svelte';
   import IconSquarePlus from '@lucide/svelte/icons/square-plus';
   import IconUser from '@lucide/svelte/icons/user';
   import IconTrash from '@lucide/svelte/icons/trash';
+  import IconTrash2 from '@lucide/svelte/icons/trash-2';
   import { goto } from '$app/navigation';
   import type { ProfileSummary } from '$lib/types';
 
@@ -29,6 +30,14 @@
     }
   }
 
+  async function onDeleteAll() {
+    if (window.confirm('This is a development only feature! Do you really want to reset all data?')) {
+      if (window.confirm('Are you sure?')) {
+        await eraseDB();
+      }
+    }
+  }
+
   onMount(async () => {
     db = await loadDB();
     profileSummaries = await loadProfileSummaries(db);
@@ -38,8 +47,14 @@
 
 <div class="grid grid-rows-[auto_1fr_auto]">
   <div class="container mx-auto grid grid-cols-1 xl:grid-cols-[200px_minmax(0px,_1fr)_200px]">
-    <header class="mt-3">
+    <header class="mt-3 flex items-center justify-between">
       <h1 class="h1 p-3"><i>harp</i></h1>
+      <button
+        onclick={onDeleteAll}
+        class="ig-btn preset-tonal-error rounded-md"
+        >
+        <IconTrash2 size={18} />
+      </button>
     </header>
 
     <main class="col-span-1 p-4">

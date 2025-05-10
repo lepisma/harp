@@ -1,6 +1,6 @@
 // Database interaction functions and utilities
 
-import { openDB, type IDBPDatabase, type DBSchema } from 'idb';
+import { openDB, type IDBPDatabase, type DBSchema, deleteDB } from 'idb';
 import type { Profile } from './types';
 
 interface HarpDB extends DBSchema {
@@ -36,4 +36,8 @@ export async function loadDB(): Promise<Database> {
   });
 
   return db;
+}
+
+export async function eraseDB() {
+  await deleteDB(DB_NAME);
 }
