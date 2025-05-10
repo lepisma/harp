@@ -24,7 +24,7 @@
 <div class="rounded-md shadow-md py-5">
   <article class="space-y-2">
     <header class="flex items-center justify-between">
-      <span class="text-sm bg-gray-100 my-2 p-1 px-5">
+      <span class="text-sm bg-gray-100 dark:bg-gray-800 my-2 p-1 px-5">
         {metric.id}
       </span>
       <span class="pr-2">
