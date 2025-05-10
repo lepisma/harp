@@ -4,7 +4,7 @@ import type { MetricValue, Profile } from './types';
  * Collect all metric values from the profile and return a map of metric id to
    metric values
  */
-export function profileMetricValues(profile: Profile): object {
+export function profileMetricValues(profile: Profile): Record<string, MetricValue[]> {
   let metricValuesMap: Record<string, MetricValue[]> = {};
 
   for (const journal of profile.journals) {
