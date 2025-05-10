@@ -42,7 +42,7 @@
     }, 100);
   }
 
-  async function handleNewJournalEntry(entry) {
+  async function handleNewJournalEntry(entry: JournalEntry) {
     // Entry could be empty. We ignore them here
     if (entry.text !== '') {
       profile.journals[0].entries.push(entry);
@@ -60,8 +60,12 @@
   }
 
   async function handleEditJournalEntry(entry: JournalEntry) {
-    profile.journals[0].entries = profile.journals[0].entries.map(e => (e.uuid === entry.uuid) ? entry : e);
-    await saveProfile(db, profile);
+    if (entry.text === '') {
+      await handleDeleteJournalEntry(entry);
+    } else {
+      profile.journals[0].entries = profile.journals[0].entries.map(e => (e.uuid === entry.uuid) ? entry : e);
+      await saveProfile(db, profile);
+    }
   }
 
   onMount(async () => {
