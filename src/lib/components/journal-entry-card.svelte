@@ -3,10 +3,18 @@
   import IconPencil from '@lucide/svelte/icons/pencil';
   import JournalForm from '$lib/components/journal-form.svelte';
   import type { JournalEntry } from '$lib/types';
+  import { triggerDownload } from '$lib/utils';
 
-  let { entry, onDelete, onEdit, onAssetUpload } = $props();
+  let { entry, onDelete, onEdit, onAssetUpload, readAsset } = $props();
 
   let isEditFormOpen = $state(false);
+
+  async function openAllAssets() {
+    for (const asset of entry.assets) {
+      let data = await readAsset(asset, entry.uuid);
+      triggerDownload(data, asset.fileName);
+    }
+  }
 
   function handleSave(editedEntry: JournalEntry) {
     onEdit(editedEntry);
@@ -40,7 +48,7 @@
         <span class="rounded-md bg-gray-100 px-2">Metrics</span>
       {/if}
       {#if entry.assets.length > 0 }
-        <span class="rounded-md bg-gray-100 px-2">Assets</span>
+        <button class="rounded-md bg-gray-100 px-2" onclick={openAllAssets}>Assets</button>
       {/if}
     </small>
   </footer>

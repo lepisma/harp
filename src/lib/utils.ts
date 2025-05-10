@@ -34,3 +34,19 @@ export function profileTags(profile: Profile): string[] {
 
   return [...tags].sort();
 }
+
+export function triggerDownload(data: Blob, fileName: string) {
+  const url = URL.createObjectURL(data);
+
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = fileName;
+
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 100);
+}
