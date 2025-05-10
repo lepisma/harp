@@ -6,6 +6,7 @@
   import IconUser from '@lucide/svelte/icons/user';
   import IconTrash from '@lucide/svelte/icons/trash';
   import IconTrash2 from '@lucide/svelte/icons/trash-2';
+  import IconUpload from '@lucide/svelte/icons/upload';
   import { goto } from '$app/navigation';
   import type { ProfileSummary } from '$lib/types';
 
@@ -47,17 +48,21 @@
 
 <div class="grid grid-rows-[auto_1fr_auto]">
   <div class="container mx-auto grid grid-cols-1 xl:grid-cols-[200px_minmax(0px,_1fr)_200px]">
-    <header class="mt-3 flex items-center justify-between">
+    <header class="col-span-1 mt-3 flex items-center gap-5 xl:flex-col xl:items-start">
       <h1 class="h1 p-3"><i>harp</i></h1>
-      <button
-        onclick={onDeleteAll}
-        class="ig-btn preset-tonal-error rounded-md"
-        >
-        <IconTrash2 size={18} />
-      </button>
+      <div class="flex items-center gap-2">
+        <button onclick={onDeleteAll} class="btn btn-sm preset-tonal-error">
+          <span>Clear DB</span>
+          <IconTrash2 size={14} />
+        </button>
+        <button type="button" disabled class="btn btn-sm preset-outlined">
+          <span>Import</span>
+          <IconUpload size={14} />
+        </button>
+      </div>
     </header>
 
-    <main class="col-span-1 p-4">
+    <main class="col-span-1 p-4 mt-3">
       <div class="w-full grid grid-cols-2 gap-4 mb-5">
         {#each profileSummaries as summary}
           <a href={`/profile/${summary.uuid}`}>
