@@ -13,11 +13,13 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Asset, JournalEntry } from '$lib/types';
-  import { profileTags } from '$lib/utils';
+  import type { Asset, JournalEntry, MetricValue } from '$lib/types';
+  import { profileMetricValues, profileTags } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
+  import MetricForm from '$lib/components/metric-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
+  import MetricCard from '$lib/components/metric-card.svelte';
   import { formatProfile } from '$lib/org';
 
   let profileId = $page.params.uuid;
@@ -25,10 +27,14 @@
   let db = $state(null);
   let profile = $state(null);
   let journal = $derived(profile !== null ? profile.journals[0] : []);
+  let metrics = $derived(profile !== null ? profile.metadata.metrics : []);
+  let metricValuesMap = $derived(profile !== null ? profileMetricValues(profile) : {});
+
   let tags = $derived(profile !== null ? profileTags(profile) : []);
 
   let selectedTab = $state('journal');
   let isJournalFormOpen = $state(false);
+  let isMetricFormOpen = $state(false);
 
   function exportProfile() {
     // For now just generating a single org file
@@ -50,6 +56,13 @@
     }
 
     isJournalFormOpen = false;
+  }
+
+  async function handleNewMetric(metric: Metric) {
+    profile.metadata.metrics.push(metric);
+    await saveProfile(db, profile);
+
+    isMetricFormOpen = false;
   }
 
   async function handleDeleteJournalEntry(entry: JournalEntry) {
@@ -74,6 +87,10 @@
 
   async function readAsset(asset: Asset, parentId: string): Promise<Blob> {
     return await loadAsset(db, parentId, asset);
+  }
+
+  async function onNewMetricValue(mv: MetricValue) {
+    console.log(mv);
   }
 
   onMount(async () => {
@@ -158,35 +175,53 @@
                   onClose={() => isJournalFormOpen = false}
                   onAssetUpload={ handleAssetUpload }
                   />
-              {/if}
+                {/if}
 
-              <div class="grid gap-4 md:grid-cols-1">
-                {#each [...journal.entries].sort((a, b) => a.datetime < b.datetime) as entry}
-                  <JournalEntryCard
-                    entry={ entry }
-                    onDelete={ handleDeleteJournalEntry }
-                    onEdit={ handleEditJournalEntry }
-                    onAssetUpload={ handleAssetUpload }
-                    readAsset={ readAsset }
-                    />
-                {/each}
-              </div>
+<div class="grid gap-4 md:grid-cols-1">
+  {#each [...journal.entries].sort((a, b) => a.datetime < b.datetime) as entry}
+    <JournalEntryCard
+      entry={ entry }
+      onDelete={ handleDeleteJournalEntry }
+      onEdit={ handleEditJournalEntry }
+      onAssetUpload={ handleAssetUpload }
+      readAsset={ readAsset }
+      />
+    {/each}
+  </div>
             </Tabs.Panel>
             <Tabs.Panel value="metrics">
-              Under Development
-            </Tabs.Panel>
-            <Tabs.Panel value="reports">
-              Under Development
-            </Tabs.Panel>
-            <Tabs.Panel value="consultations">
-              Under Development
-            </Tabs.Panel>
-            {/snippet}
-          </Tabs>
-        </div>
-      </main>
-    </div>
-    <footer>
-    </footer>
-  </div>
+              <div class="mb-4">
+                <button type="button" onclick={() => isMetricFormOpen = true} class="btn btn-sm preset-outlined">
+    <span>Define New Metric</span>
+    <IconPlus size={18} />
+</button>
+</div>
+
+{#if isMetricFormOpen}
+  <MetricForm
+    onSave={ handleNewMetric }
+    onClose={() => isMetricFormOpen = false}
+    />
+  {/if}
+
+<div class="grid gap-4 md:grid-cols-1">
+  {#each metrics as metric}
+    <MetricCard metric={metric} metricValuesMap={metricValuesMap} onNewValue={onNewMetricValue} />
+  {/each}
+</div>
+</Tabs.Panel>
+<Tabs.Panel value="reports">
+  Under Development
+</Tabs.Panel>
+<Tabs.Panel value="consultations">
+  Under Development
+</Tabs.Panel>
+{/snippet}
+</Tabs>
+</div>
+</main>
+</div>
+<footer>
+</footer>
+</div>
 {/if}

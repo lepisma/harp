@@ -1,4 +1,36 @@
-import type { Profile } from './types';
+import type { MetricValue, Profile } from './types';
+
+/*
+ * Collect all metric values from the profile and return a map of metric id to
+   metric values
+ */
+export function profileMetricValues(profile: Profile): object {
+  let metricValuesMap: Record<string, MetricValue[]> = {};
+
+  for (const journal of profile.journals) {
+    for (const entry of journal.entries) {
+      for (const mv of entry.metricValues) {
+        if (!Object.keys(metricValuesMap).includes(mv.id)) {
+          metricValuesMap[mv.id] = [];
+        }
+
+        metricValuesMap[mv.id].push(mv);
+      }
+    }
+  }
+
+  for (const report of profile.reports) {
+    for (const mv of report.metricValues) {
+      if (!Object.keys(metricValuesMap).includes(mv.id)) {
+        metricValuesMap[mv.id] = [];
+      }
+
+      metricValuesMap[mv.id].push(mv);
+    }
+  }
+
+  return metricValuesMap;
+}
 
 /*
  * Collect and return tags from across items in profile
