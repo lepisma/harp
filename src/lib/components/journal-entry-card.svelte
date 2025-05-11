@@ -2,18 +2,59 @@
   import IconTrash from '@lucide/svelte/icons/trash-2';
   import IconPencil from '@lucide/svelte/icons/pencil';
   import JournalForm from '$lib/components/journal-form.svelte';
-  import type { JournalEntry } from '$lib/types';
+  import type { Asset, JournalEntry } from '$lib/types';
   import { triggerOpen } from '$lib/utils';
+  import { formatOrgToHTML } from '$lib/org';
 
   let { entry, onDelete, onEdit, onAssetUpload, readAsset } = $props();
+  let content = $derived.by(async () => {
+    return transformAttachmentLinks(await formatOrgToHTML(entry.text));
+  });
 
   let isEditFormOpen = $state(false);
 
-  async function openAllAssets() {
-    for (const asset of entry.assets) {
-      let data = await readAsset(asset, entry.uuid);
-      triggerOpen(data);
+  async function handleContentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+
+    if (target.tagName === 'A' && target.hasAttribute('data-filename')) {
+      event.preventDefault();
+
+      const fileName = target.getAttribute('data-filename');
+      if (fileName) {
+        let asset = entry.assets.find((a: Asset) => a.fileName === fileName);
+
+        if (!asset) {
+          alert(`Asset ${fileName} not found`);
+        } else {
+          let data = await readAsset(asset, entry.uuid);
+          triggerOpen(data);
+        }
+      }
     }
+  }
+
+  function transformAttachmentLinks(htmlString: string): string {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    const anchorTags = doc.querySelectorAll('a');
+    anchorTags.forEach(tag => {
+      const href = tag.getAttribute('href');
+
+      if (href && href.startsWith('attachment:')) {
+        const fileName = href.substring('attachment:'.length);
+        tag.setAttribute('href', '#');
+        tag.setAttribute('data-filename', fileName);
+        tag.classList.add('btn', 'btn-sm', 'preset-tonal');
+
+        // Simplify the text inside link. This is needed since many files have
+        // underscores etc. in name and they are getting transformed to
+        // subscripts because of usual org thing.
+        tag.innerHTML = fileName;
+      }
+    });
+
+    return doc.body.innerHTML;
   }
 
   function handleSave(editedEntry: JournalEntry) {
@@ -33,8 +74,10 @@
         <button type="button" onclick={() => onDelete(entry)} class="btn-icon preset-outlined"><IconTrash size={18} /></button>
       </span>
     </header>
-    <p class="p-5">
-      {entry.text}
+    <p class="p-5" onclick={handleContentClick}>
+      {#await content then value}
+	{@html value}
+      {/await}
     </p>
   </article>
   <footer class="flex items-center justify-between gap-4">
@@ -48,7 +91,7 @@
         <span class="rounded-md bg-gray-100 px-2">Metrics</span>
       {/if}
       {#if entry.assets.length > 0 }
-        <button class="rounded-md bg-gray-100 px-2" onclick={openAllAssets}>Assets</button>
+        <span class="rounded-md bg-gray-100 px-2">Assets</span>
       {/if}
     </small>
   </footer>

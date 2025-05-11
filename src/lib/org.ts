@@ -1,6 +1,10 @@
 // Org parsing and formatting functions
 
 import type { Consultation, Journal, Metadata, MetricValue, Profile, Report } from "./types";
+import { unified } from 'unified';
+import parse from 'uniorg-parse';
+import uniorg2rehype from 'uniorg-rehype';
+import stringify from 'rehype-stringify';
 
 interface OrgNode {
   id?: string;
@@ -63,6 +67,25 @@ export function parseMetricValues(orgString: string, datetime: Date, reference: 
   });
 }
 
+function addAnchorClassToLinks(htmlString: string): string {
+  const parser = new DOMParser();
+
+  const doc = parser.parseFromString(htmlString, 'text/html');
+  const anchorTags = doc.querySelectorAll('a');
+
+  anchorTags.forEach(tag => {
+    tag.classList.add('anchor');
+  });
+
+  return doc.body.innerHTML;
+}
+
+export function formatOrgToHTML(content: string): Promise<string> {
+  return new Promise(resolve => {
+    const processor = unified().use(parse).use(uniorg2rehype).use(stringify);
+    processor.process(content).then(file => resolve(addAnchorClassToLinks(file.value as string)));
+  });
+}
 
 function formatTags(tags: string[]): string {
   if (tags.length > 0) {
