@@ -121,7 +121,7 @@
               <IconDownload size={14} />
             </button>
             <button type="button" disabled class="btn btn-sm preset-outlined">
-              <span>Import</span>
+              <span>Import & Merge</span>
               <IconUpload size={14} />
             </button>
           </div>
