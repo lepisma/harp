@@ -22,6 +22,7 @@
     tags = entry.tags;
     metricValues = entry.metricValues;
     datetime = formatDateForInput(entry.datetime);
+    assets = entry.assets;
   }
 
   function formatDateForInput(date: Date): string {
