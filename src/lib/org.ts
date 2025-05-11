@@ -213,7 +213,7 @@ function formatJournals(journals: Journal[]): string {
         datetime: entry.datetime,
         level: 3,
         title: 'Entry',
-        tags: entry.tags,
+        tags,
         props: {
           'PRIVATE': entry.isPrivate ? 't' : 'nil'
         },
