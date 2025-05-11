@@ -74,10 +74,11 @@
 
         // Try to insert at cursor, or just at the end
         const insertAt = textarea.selectionEnd;
+        const insertText = `[[attachment:${asset.fileName}][${asset.fileName}]]`
         if (insertAt) {
-          text = text.substring(0, insertAt) + `[[attachment:${asset.fileName}]]` + text.substring(insertAt);
+          text = text.substring(0, insertAt) + insertText + text.substring(insertAt);
         } else {
-          text += `[[attachment:${asset.fileName}]]`;
+          text += insertText;
         }
 
         assets.push(asset);
