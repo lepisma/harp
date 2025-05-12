@@ -13,15 +13,17 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Asset, JournalEntry, Journal, Metric, MetricValue, Report } from '$lib/types';
+  import type { Asset, JournalEntry, Journal, Metric, MetricValue, Report, Document } from '$lib/types';
   import { profileMetricValues, profileTags } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
   import MetricForm from '$lib/components/metric-form.svelte';
   import ReportForm from '$lib/components/report-form.svelte';
+  import DocumentForm from '$lib/components/document-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
   import MetricCard from '$lib/components/metric-card.svelte';
   import ReportCard from '$lib/components/report-card.svelte';
+  import DocumentCard from '$lib/components/document-card.svelte';
   import { archiveProfile } from '$lib/fs';
   import saveAs from 'file-saver';
 
@@ -32,6 +34,7 @@
   let journal: Journal[] = $derived(profile !== null ? profile.journals[0] : []);
   let metrics: Metric[] = $derived(profile !== null ? profile.metadata.metrics : []);
   let reports: Report[] = $derived(profile !== null ? profile.reports : []);
+  let documents: Document[] = $derived(profile !== null ? profile.documents : []);
   let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
   let tags: string[] = $derived(profile !== null ? profileTags(profile) : []);
 
@@ -39,6 +42,7 @@
   let isJournalFormOpen = $state(false);
   let isMetricFormOpen = $state(false);
   let isReportFormOpen = $state(false);
+  let isDocumentFormOpen = $state(false);
 
   async function exportProfile() {
     const blob = await archiveProfile(db, profile);
@@ -69,6 +73,13 @@
     isReportFormOpen = false;
   }
 
+  async function handleNewDocument(doc: Document) {
+    profile.documents.push(doc);
+    await saveProfile(db, profile);
+
+    isDocumentFormOpen = false;
+  }
+
   async function handleDeleteJournalEntry(entry: JournalEntry) {
     if (window.confirm('Do you really want to delete this entry?')) {
       profile.journals[0].entries = profile.journals[0].entries.filter(e => e.uuid !== entry.uuid);
@@ -83,8 +94,20 @@
     }
   }
 
+  async function handleDeleteDocument(doc: Document) {
+    if (window.confirm('Do you really want to delete this document?')) {
+      profile.documents = profile.documents.filter(d => d.uuid !== document.uuid);
+      await saveProfile(db, profile);
+    }
+  }
+
   async function handleEditReport(report: Report) {
     profile.reports = profile.reports.map(r => (r.uuid === report.uuid) ? report : r);
+    await saveProfile(db, profile);
+  }
+
+  async function handleEditDocument(doc: Document) {
+    profile.documents = profile.documents.map(d => (d.uuid === doc.uuid) ? doc : d);
     await saveProfile(db, profile);
   }
 
@@ -228,9 +251,8 @@
 </Tabs.Panel>
 <Tabs.Panel value="reports">
   <div class="mb-4">
-
     <button type="button" onclick={() => isReportFormOpen = true} class="btn btn-sm preset-outlined">
-      <span>Add New Report</span>
+      <span>New Report</span>
       <IconPlus size={18} />
     </button>
   </div>
@@ -256,7 +278,32 @@
 </div>
 </Tabs.Panel>
 <Tabs.Panel value="documents">
-  Under Development
+  <div class="mb-4">
+    <button type="button" onclick={() => isDocumentFormOpen = true} class="btn btn-sm preset-outlined">
+      <span>New Document</span>
+      <IconPlus size={18} />
+    </button>
+  </div>
+
+  {#if isDocumentFormOpen}
+    <DocumentForm
+      onSave={ handleNewDocument }
+      onClose={() => isDocumentFormOpen = false}
+      onAssetUpload={ handleAssetUpload }
+      />
+    {/if}
+
+<div class="grid gap-4 md:grid-cols-1">
+  {#each documents as doc}
+    <DocumentCard
+      doc={ doc }
+      onDelete={ handleDeleteDocument }
+      onEdit={ handleEditDocument }
+      onAssetUpload={ handleAssetUpload }
+      readAsset={ readAsset }
+      />
+  {/each}
+</div>
 </Tabs.Panel>
 {/snippet}
 </Tabs>

@@ -74,5 +74,5 @@
 </div>
 
 {#if isEditFormOpen}
-  <JournalForm entry={ entry } title='Edit entry' onSave={handleSave} onAssetUpload={onAssetUpload} onClose={() => isEditFormOpen = false } />
+  <JournalForm entry={ entry } title='Edit Entry' onSave={handleSave} onAssetUpload={onAssetUpload} onClose={() => isEditFormOpen = false } />
 {/if}
