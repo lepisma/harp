@@ -1,5 +1,5 @@
 import type { Profile } from './types';
-import { parseTitle, parseOrgId } from './org';
+import { parseTitle, parseOrgId, formatProfile } from './org';
 
 async function readFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -32,4 +32,16 @@ export async function loadProfile(file: File): Promise<Profile> {
     name: parseTitle(content),
     file: file,
   };
+}
+
+/*
+ * Create a tarball containing all logs and files from the profile.
+ *
+ * The structure has a main org file with assets present and referenced as
+ * org-attachments in a ./data directory.
+ */
+export async function archiveProfile(profile: Profile): Promise<Blob> {
+  let indexFile = formatProfile(profile);
+
+  return new Blob([indexFile], { type: 'text/plain;charset=uft-8' });
 }

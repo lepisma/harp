@@ -20,7 +20,7 @@
   import MetricForm from '$lib/components/metric-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
   import MetricCard from '$lib/components/metric-card.svelte';
-  import { formatProfile } from '$lib/org';
+  import { archiveProfile } from '$lib/fs';
 
   let profileId = $page.params.uuid;
 
@@ -35,9 +35,8 @@
   let isJournalFormOpen = $state(false);
   let isMetricFormOpen = $state(false);
 
-  function exportProfile() {
-    // For now just generating a single org file
-    const blob = new Blob([formatProfile(profile)], { type: 'text/plain;charset=utf-8' });
+  async function exportProfile() {
+    const blob = await archiveProfile(profile);
     const url = URL.createObjectURL(blob);
 
     window.open(url, '_blank');
