@@ -1,6 +1,6 @@
 // Org parsing and formatting functions
 
-import type { Consultation, Journal, Metadata, MetricValue, Profile, Report } from "./types";
+import type { Document, Journal, Metadata, MetricValue, Profile, Report } from "./types";
 import { unified } from 'unified';
 import parse from 'uniorg-parse';
 import uniorg2rehype from 'uniorg-rehype';
@@ -259,24 +259,24 @@ function formatReports(reports: Report[]): string {
   }));
 }
 
-function formatConsultations(consultations: Consultation[]): string {
-  return formatSection('Consultations', consultations.map(c => {
-    let tags = [...c.tags];
+function formatDocuments(documents: Document[]): string {
+  return formatSection('Documents', documents.map(d => {
+    let tags = [...d.tags];
 
-    if (c.assets.length > 0) {
+    if (d.assets.length > 0) {
       tags.push('ATTACH');
     }
 
     return {
-      id: c.uuid,
-      datetime: c.datetime,
+      id: d.uuid,
+      datetime: d.datetime,
       level: 2,
-      title: c.name,
+      title: d.name,
       tags,
       props: {
-        'SOURCE': c.source.id
+        'SOURCE': d.source.id
       },
-      content: c.annotation || ''
+      content: d.annotation || ''
     };
   }));
 }
@@ -287,7 +287,7 @@ export function formatProfile(profile: Profile): string {
   let metadata = formatMetadata(profile.metadata);
   let journals = formatJournals(profile.journals);
   let reports = formatReports(profile.reports);
-  let consultations = formatConsultations(profile.consultations);
+  let documents = formatDocuments(profile.documents);
   // metricValues are derived, so not formatting them separately. Note that
   // metric definitions are in metadata.
 
@@ -299,5 +299,5 @@ ${journals}
 
 ${reports}
 
-${consultations}`;
+${documents}`;
 }

@@ -17,7 +17,7 @@ function newProfile(name: string): Profile {
       entries: []
     }],
     reports: [],
-    consultations: [],
+    documents: [],
     metricValues: [],
   }
 }
@@ -31,7 +31,7 @@ function summarizeProfile(profile: Profile): ProfileSummary {
       journals: profile.journals.length,
       journalEntries: profile.journals.map(j => j.entries.length).reduce((a, b) => a + b, 0),
       reports: profile.reports.length,
-      consultations: profile.consultations.length,
+      documents: profile.documents.length,
       metricValues: profile.metricValues.length,
     }
   };

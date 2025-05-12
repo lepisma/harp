@@ -51,7 +51,7 @@ export interface Report {
   annotation?: string;
 }
 
-export interface Consultation {
+export interface Document {
   name: string;
   datetime: Date;
   uuid: string;
@@ -72,7 +72,7 @@ export interface Profile {
   metadata: Metadata;
   journals: Journal[];
   reports: Report[];
-  consultations: Consultation[];
+  documents: Document[];
 }
 
 export interface ProfileSummary {
@@ -83,7 +83,7 @@ export interface ProfileSummary {
     journals: number;
     journalEntries: number;
     reports: number;
-    consultations: number;
+    documents: number;
     metricValues: number;
   }
 }

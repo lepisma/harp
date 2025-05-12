@@ -39,8 +39,8 @@ export function profileTags(profile: Profile): string[] {
     }
   }
 
-  for (const consultation of profile.consultations) {
-    for (const tag of consultation.tags) {
+  for (const document of profile.documents) {
+    for (const tag of document.tags) {
       tags.add(tag);
     }
   }

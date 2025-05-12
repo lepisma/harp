@@ -54,7 +54,7 @@ Actions:
 2. Link other artifacts
 3. Add images from, say, camera (for symptoms etc.)
 
-** Consultations
+** Documents
 Similar to reports with maybe different properties and no manual input.
 
 -----

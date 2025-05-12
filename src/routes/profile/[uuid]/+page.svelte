@@ -154,9 +154,9 @@
               {#snippet lead()}<IconScanHeart size={20} />{/snippet}
               Reports
             </Tabs.Control>
-            <Tabs.Control value="consultations">
+            <Tabs.Control value="documents">
               {#snippet lead()}<IconClipboardPen size={20} />{/snippet}
-              Consultations
+              Documents
             </Tabs.Control>
             {/snippet}
             {#snippet content()}
@@ -212,7 +212,7 @@
 <Tabs.Panel value="reports">
   Under Development
 </Tabs.Panel>
-<Tabs.Panel value="consultations">
+<Tabs.Panel value="documents">
   Under Development
 </Tabs.Panel>
 {/snippet}
