@@ -21,6 +21,7 @@
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
   import MetricCard from '$lib/components/metric-card.svelte';
   import { archiveProfile } from '$lib/fs';
+  import saveAs from 'file-saver';
 
   let profileId = $page.params.uuid;
 
@@ -37,13 +38,7 @@
 
   async function exportProfile() {
     const blob = await archiveProfile(db, profile);
-    const url = URL.createObjectURL(blob);
-
-    window.open(url, '_blank');
-
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 100);
+    saveAs(blob, `archive-${profile.uuid}.${(new Date()).toISOString()}.harp.zip`);
   }
 
   async function handleNewJournalEntry(entry: JournalEntry) {
