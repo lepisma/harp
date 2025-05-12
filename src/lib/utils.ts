@@ -19,7 +19,29 @@ export function profileMetricValues(profile: Profile): MetricValue[] {
   return metricValues;
 }
 
-export function profileAssets(): Asset
+export function transformAttachmentLinks(htmlString: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(htmlString, 'text/html');
+
+  const anchorTags = doc.querySelectorAll('a');
+  anchorTags.forEach(tag => {
+    const href = tag.getAttribute('href');
+
+    if (href && href.startsWith('attachment:')) {
+      const fileName = href.substring('attachment:'.length);
+      tag.setAttribute('href', '#');
+      tag.setAttribute('data-filename', fileName);
+      tag.classList.add('btn', 'btn-sm', 'preset-tonal');
+
+      // Simplify the text inside link. This is needed since many files have
+      // underscores etc. in name and they are getting transformed to
+      // subscripts because of usual org thing.
+      tag.innerHTML = fileName;
+    }
+  });
+
+  return doc.body.innerHTML;
+}
 
 /*
  * Collect and return tags from across items in profile

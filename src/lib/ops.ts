@@ -85,6 +85,7 @@ export async function saveProfile(db: Database, profile: Profile) {
   clonedProfile.reports = clonedProfile.reports.map(r => {
     return {
       ...r,
+      datetime: new Date(r.datetime),
       metricValues: r.metricValues.map(mv => {return {...mv, datetime: new Date(mv.datetime)}})
     }
   });

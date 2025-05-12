@@ -3,7 +3,7 @@
   import IconPencil from '@lucide/svelte/icons/pencil';
   import JournalForm from '$lib/components/journal-form.svelte';
   import type { Asset, JournalEntry } from '$lib/types';
-  import { triggerOpen } from '$lib/utils';
+  import { triggerOpen, transformAttachmentLinks } from '$lib/utils';
   import { formatOrgToHTML } from '$lib/org';
 
   let { entry, onDelete, onEdit, onAssetUpload, readAsset } = $props();
@@ -31,30 +31,6 @@
         }
       }
     }
-  }
-
-  function transformAttachmentLinks(htmlString: string): string {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-
-    const anchorTags = doc.querySelectorAll('a');
-    anchorTags.forEach(tag => {
-      const href = tag.getAttribute('href');
-
-      if (href && href.startsWith('attachment:')) {
-        const fileName = href.substring('attachment:'.length);
-        tag.setAttribute('href', '#');
-        tag.setAttribute('data-filename', fileName);
-        tag.classList.add('btn', 'btn-sm', 'preset-tonal');
-
-        // Simplify the text inside link. This is needed since many files have
-        // underscores etc. in name and they are getting transformed to
-        // subscripts because of usual org thing.
-        tag.innerHTML = fileName;
-      }
-    });
-
-    return doc.body.innerHTML;
   }
 
   function handleSave(editedEntry: JournalEntry) {

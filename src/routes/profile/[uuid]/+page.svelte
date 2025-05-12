@@ -13,13 +13,15 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Asset, JournalEntry, Metric, MetricValue } from '$lib/types';
+  import type { Asset, JournalEntry, Journal, Metric, MetricValue, Report } from '$lib/types';
   import { profileMetricValues, profileTags } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
   import MetricForm from '$lib/components/metric-form.svelte';
+  import ReportForm from '$lib/components/report-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
   import MetricCard from '$lib/components/metric-card.svelte';
+  import ReportCard from '$lib/components/report-card.svelte';
   import { archiveProfile } from '$lib/fs';
   import saveAs from 'file-saver';
 
@@ -27,14 +29,16 @@
 
   let db = $state(null);
   let profile = $state(null);
-  let journal = $derived(profile !== null ? profile.journals[0] : []);
+  let journal: Journal[] = $derived(profile !== null ? profile.journals[0] : []);
   let metrics: Metric[] = $derived(profile !== null ? profile.metadata.metrics : []);
+  let reports: Report[] = $derived(profile !== null ? profile.reports : []);
   let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
   let tags: string[] = $derived(profile !== null ? profileTags(profile) : []);
 
   let selectedTab = $state('journal');
   let isJournalFormOpen = $state(false);
   let isMetricFormOpen = $state(false);
+  let isReportFormOpen = $state(false);
 
   async function exportProfile() {
     const blob = await archiveProfile(db, profile);
@@ -58,11 +62,30 @@
     isMetricFormOpen = false;
   }
 
+  async function handleNewReport(report: Report) {
+    profile.reports.push(report);
+    await saveProfile(db, profile);
+
+    isReportFormOpen = false;
+  }
+
   async function handleDeleteJournalEntry(entry: JournalEntry) {
     if (window.confirm('Do you really want to delete this entry?')) {
       profile.journals[0].entries = profile.journals[0].entries.filter(e => e.uuid !== entry.uuid);
       await saveProfile(db, profile);
     }
+  }
+
+  async function handleDeleteReport(report: Report) {
+    if (window.confirm('Do you really want to delete this report?')) {
+      profile.reports = profile.reports.filter(r => r.uuid !== report.uuid);
+      await saveProfile(db, profile);
+    }
+  }
+
+  async function handleEditReport(report: Report) {
+    profile.reports = profile.reports.map(r => (r.uuid === report.uuid) ? report : r);
+    await saveProfile(db, profile);
   }
 
   async function handleEditJournalEntry(entry: JournalEntry) {
@@ -204,7 +227,33 @@
 </div>
 </Tabs.Panel>
 <Tabs.Panel value="reports">
-  Under Development
+  <div class="mb-4">
+
+    <button type="button" onclick={() => isReportFormOpen = true} class="btn btn-sm preset-outlined">
+      <span>Add New Report</span>
+      <IconPlus size={18} />
+    </button>
+  </div>
+
+  {#if isReportFormOpen}
+    <ReportForm
+      onSave={ handleNewReport }
+      onClose={() => isReportFormOpen = false}
+      onAssetUpload={ handleAssetUpload }
+      />
+    {/if}
+
+<div class="grid gap-4 md:grid-cols-1">
+  {#each reports as report}
+    <ReportCard
+      report={ report }
+      onDelete={ handleDeleteReport }
+      onEdit={ handleEditReport }
+      onAssetUpload={ handleAssetUpload }
+      readAsset={ readAsset }
+      />
+  {/each}
+</div>
 </Tabs.Panel>
 <Tabs.Panel value="documents">
   Under Development
