@@ -1,5 +1,8 @@
 import type { Profile } from './types';
-import { parseTitle, parseOrgId, formatProfile } from './org';
+import { parseTitle, parseOrgId, formatProfile, orgAttachPath } from './org';
+import JSZip from 'jszip';
+import { loadAsset } from './ops';
+import type { Database } from './db';
 
 async function readFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -35,13 +38,41 @@ export async function loadProfile(file: File): Promise<Profile> {
 }
 
 /*
- * Create a tarball containing all logs and files from the profile.
+ * Create an archive file containing all logs and files from the profile.
  *
  * The structure has a main org file with assets present and referenced as
  * org-attachments in a ./data directory.
  */
-export async function archiveProfile(profile: Profile): Promise<Blob> {
-  let indexFile = formatProfile(profile);
+export async function archiveProfile(db: Database, profile: Profile): Promise<Blob> {
+  let zip = new JSZip();
 
-  return new Blob([indexFile], { type: 'text/plain;charset=uft-8' });
+  // First insert the index file
+  zip.file('index.org', formatProfile(profile));
+
+  // Journals, reports, and documents could have assets attachment
+  for (const journal of profile.journals) {
+    for (const entry of journal.entries) {
+      for (const asset of entry.assets) {
+        let parentId = entry.uuid;
+        zip.file(orgAttachPath(asset, parentId), loadAsset(db, parentId, asset));
+      }
+    }
+  }
+
+  for (const report of profile.reports) {
+    for (const asset of report.assets) {
+      let parentId = report.uuid;
+      zip.file(orgAttachPath(asset, parentId), loadAsset(db, parentId, asset));
+    }
+  }
+
+  for (const document of profile.documents) {
+    for (const asset of document.assets) {
+      let parentId = document.uuid;
+      zip.file(orgAttachPath(asset, parentId), loadAsset(db, parentId, asset));
+    }
+  }
+
+  let data = await zip.generateAsync({ type: 'uint8array' });
+  return new Blob([data], { type: 'application/zip' });
 }

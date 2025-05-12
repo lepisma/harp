@@ -1,6 +1,6 @@
 // Org parsing and formatting functions
 
-import type { Document, Journal, Metadata, MetricValue, Profile, Report } from "./types";
+import type { Asset, Document, Journal, Metadata, MetricValue, Profile, Report } from "./types";
 import { unified } from 'unified';
 import parse from 'uniorg-parse';
 import uniorg2rehype from 'uniorg-rehype';
@@ -14,6 +14,13 @@ interface OrgNode {
   tags: string[];
   props: object;
   content: string;
+}
+
+/*
+ * Return relative path of an asset file using the default org-attach approach
+ */
+export function orgAttachPath(asset: Asset, parentId: string): string {
+  return `data/${parentId.substring(0, 2)}/${parentId.substring(2)}/${asset.fileName}`;
 }
 
 export function parseTitle(orgString: string): string | null {

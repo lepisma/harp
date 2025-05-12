@@ -36,7 +36,7 @@
   let isMetricFormOpen = $state(false);
 
   async function exportProfile() {
-    const blob = await archiveProfile(profile);
+    const blob = await archiveProfile(db, profile);
     const url = URL.createObjectURL(blob);
 
     window.open(url, '_blank');

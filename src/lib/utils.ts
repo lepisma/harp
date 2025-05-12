@@ -19,6 +19,8 @@ export function profileMetricValues(profile: Profile): MetricValue[] {
   return metricValues;
 }
 
+export function profileAssets(): Asset
+
 /*
  * Collect and return tags from across items in profile
  */
