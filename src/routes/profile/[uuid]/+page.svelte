@@ -262,6 +262,7 @@
       onSave={ handleNewReport }
       onClose={() => isReportFormOpen = false}
       onAssetUpload={ handleAssetUpload }
+      readAsset={ readAsset }
       />
     {/if}
 
