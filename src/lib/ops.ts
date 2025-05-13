@@ -90,5 +90,12 @@ export async function saveProfile(db: Database, profile: Profile) {
     }
   });
 
+  clonedProfile.documents = clonedProfile.documents.map(d => {
+    return {
+      ...d,
+      datetime: new Date(d.datetime)
+    }
+  });
+
   await db.put('profiles', clonedProfile);
 }
