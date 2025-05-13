@@ -23,7 +23,7 @@
   let text: string = $state('');
   let tags: string[] = $state([]);
   let metricValues: MetricValue[] = $state([]);
-  let datetimeString: string = $state(formatDateForInput(new Date()));
+  let datetime: Date = $state(new Date());
   let assets: Asset[] = $state([]);
 
   if (entry !== null) {
@@ -31,19 +31,19 @@
     text = entry.text;
     tags = entry.tags;
     metricValues = entry.metricValues;
-    datetimeString = formatDateForInput(entry.datetime);
+    datetime = entry.datetime;
     assets = entry.assets;
   }
 
   function handleInput(e) {
     let text = e.target.value;
     tags = parseTags(text);
-    metricValues = parseMetricValues(text, new Date(datetimeString), uuid);
+    metricValues = parseMetricValues(text, datetime, uuid);
   }
 
   function handleSave() {
     let editedEntry: JournalEntry = {
-      datetime: new Date(datetimeString),
+      datetime,
       uuid,
       tags,
       metricValues,
@@ -108,7 +108,13 @@
     <form onsubmit={handleSave}>
       <label class="label mb-4">
         <span class="label-text">Datetime</span>
-        <input type="datetime-local" required id="datetime" class="input text-sm" bind:value={datetimeString} />
+        <input
+          type="datetime-local"
+          required
+          id="datetime"
+          class="input text-sm"
+          bind:value={() => formatDateForInput(datetime), (v) => datetime = new Date(v)}
+          />
       </label>
 
       <label class="label mb-4">
