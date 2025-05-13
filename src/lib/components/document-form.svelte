@@ -26,7 +26,7 @@
   let datetime: Date = $state(new Date());
   let uuid: string = $state(uuidv4());
   let tags: string[] = $state([]);
-  let sourceName: string = $state('');
+  let source: Source = $state({ id: 'unknown', description: '' });
   let assets: Asset[] = $state([]);
   let metricValues: MetricValue[] = $state([]);
   let annotation: string | undefined = $state();
@@ -37,7 +37,7 @@
     datetime = entity.datetime;
     uuid = entity.uuid;
     tags = entity.tags;
-    sourceName = entity.source.id;
+    source = entity.source;
     assets = entity.assets;
 
     // Documents don't have metric values
@@ -76,8 +76,7 @@
       datetime,
       uuid,
       tags,
-      // For now we just use the source name to completely define the source
-      source: { id: sourceName, description: '' },
+      source,
       assets: [...assets, ...newAssets],
       annotation
     }
@@ -127,7 +126,12 @@
 
       <label class="label mb-4">
         <span class="label-text">Source</span>
-        <input type="text" id="name" required class="input text-sm" bind:value={sourceName} />
+        <input
+          type="text"
+          required
+          class="input text-sm"
+          bind:value={() => source.id === 'unknown' ? '' : source.id, (v) => source = { id: v, description: '' } }
+          />
       </label>
 
       {#if assets.length > 0}
