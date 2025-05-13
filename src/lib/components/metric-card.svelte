@@ -1,24 +1,39 @@
 <script lang="ts">
   import IconTrash from '@lucide/svelte/icons/trash-2';
   import IconPencil from '@lucide/svelte/icons/pencil';
-  import IconPlus from '@lucide/svelte/icons/plus';
   import IconArrowRight from '@lucide/svelte/icons/arrow-right';
   import MetricForm from '$lib/components/metric-form.svelte';
-  import type { MetricValue } from '$lib/types';
+  import type { Metric, MetricValue } from '$lib/types';
 
-  let { metric, metricValues, onNewValue } = $props();
+  interface CardProps {
+    metric: Metric;
+    metricValues: MetricValue[];
+    onEdit: (metric: Metric) => void;
+    onDelete: (metric: Metric) => void;
+  };
 
-  let relevantMetricValues: MetricValue[] = $derived(metricValues.filter(mv => mv.id === metric.id));
+  let { metric, metricValues, onDelete, onEdit }: CardProps = $props();
+
+  let relevantMetricValues: MetricValue[] = $derived.by(() => {
+    let mvs = metricValues.filter(mv => mv.id === metric.id)
+    mvs.sort((a, b) => (a.datetime < b.datetime));
+    return mvs;
+  });
 
   let latestValue: number | null = $derived.by(() => {
     if (relevantMetricValues.length > 0) {
-      return relevantMetricValues.sort((a, b) => a.datetime < b.datetime)[0].value;
+      return relevantMetricValues[0].value;
     } else {
       return null;
     }
-  })
+  });
 
   let isEditFormOpen = $state(false);
+
+  function handleSave(editedMetric: Metric) {
+    onEdit(editedMetric);
+    isEditFormOpen = false;
+  }
 </script>
 
 <div class="rounded-md shadow-md py-5">
@@ -28,8 +43,8 @@
         {metric.id}
       </span>
       <span class="pr-2">
-        <button disabled type="button" onclick={() => isEditFormOpen = true} class="btn-icon preset-filled"><IconPencil size={18} /></button>
-        <button disabled type="button" class="btn-icon preset-outlined"><IconTrash size={18} /></button>
+        <button type="button" onclick={() => isEditFormOpen = true} class="btn-icon preset-filled"><IconPencil size={18} /></button>
+        <button type="button" onclick={() => onDelete(metric)} class="btn-icon preset-outlined"><IconTrash size={18} /></button>
       </span>
     </header>
     <div class="p-5">
@@ -43,15 +58,11 @@
           {/each}
         </small>
       </div>
-      <button disabled type="button" onclick={() => isMetricFormOpen = true} class="mt-4 btn btn-sm preset-tonal">
-        <span>New Entry</span>
-        <IconPlus size={18} />
-      </button>
     </div>
     <div class="px-5">
       {#if relevantMetricValues}
         <ul>
-          {#each relevantMetricValues.sort((a, b) => a.datetime < b.datetime) as mv}
+          {#each relevantMetricValues as mv}
             <li>
               <span>{mv.datetime.toLocaleString()}:</span>
               <span class="font-bold">{mv.value} {metric.unit}</span>
@@ -66,5 +77,10 @@
 </div>
 
 {#if isEditFormOpen}
-  <MetricForm metric={ metric } title='Edit metric' onClose={() => isEditFormOpen = false } />
+  <MetricForm
+    metric={ metric }
+    title='Edit metric'
+    onClose={() => isEditFormOpen = false }
+    onSave={ handleSave }
+    />
 {/if}

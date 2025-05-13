@@ -3,8 +3,8 @@ export interface Metric {
   name: string,
   unit: string;
   tags: string[];
-  range?: [number, number];
-  healthyRange?: [number, number];
+  range?: [number | undefined, number | undefined];
+  healthyRange?: [number | undefined, number | undefined];
 }
 
 export interface Asset {

@@ -94,7 +94,14 @@
 
   async function handleDeleteDocument(doc: Document) {
     if (window.confirm('Do you really want to delete this document?')) {
-      profile.documents = profile.documents.filter(d => d.uuid !== document.uuid);
+      profile.documents = profile.documents.filter(d => d.uuid !== doc.uuid);
+      await saveProfile(db, profile);
+    }
+  }
+
+  async function handleDeleteMetric(metric: Metric) {
+    if (window.confirm('Do you really want to delete this metric?')) {
+      profile.metadata.metrics = profile.metadata.metrics.filter(m => m.id !== metric.id);
       await saveProfile(db, profile);
     }
   }
@@ -118,16 +125,17 @@
     }
   }
 
+  async function handleEditMetric(metric: Metric) {
+    profile.metadata.metrics = profile.metadata.metrics.map(m => (m.id === metric.id) ? metric : m);
+    await saveProfile(db, profile);
+  }
+
   async function handleAssetUpload(asset: Asset, parentId: string, data: Blob) {
     await saveAsset(db, parentId, asset, data);
   }
 
   async function readAsset(asset: Asset, parentId: string): Promise<Blob> {
     return await loadAsset(db, parentId, asset);
-  }
-
-  async function onNewMetricValue(mv: MetricValue) {
-    console.log(mv);
   }
 
   onMount(async () => {
@@ -243,7 +251,12 @@
 
 <div class="grid gap-4 md:grid-cols-1">
   {#each metrics as metric}
-    <MetricCard metric={metric} metricValues={metricValues} onNewValue={onNewMetricValue} />
+    <MetricCard
+      metric={ metric }
+      metricValues={ metricValues }
+      onDelete={ handleDeleteMetric }
+      onEdit={ handleEditMetric }
+      />
   {/each}
 </div>
 </Tabs.Panel>
