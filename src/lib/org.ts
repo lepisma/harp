@@ -246,9 +246,13 @@ function formatJournals(journals: Journal[]): string {
 function formatReports(reports: Report[]): string {
   return formatSection('Reports', reports.map(r => {
     let tags = [...r.tags];
+    let props: Record<string, string> = {
+      'SOURCE': r.source.id
+    };
 
     if (r.assets.length > 0) {
       tags.push('ATTACH');
+      props['FILES'] = r.assets.map(asset => asset.fileName).join(', ');
     }
 
     return {
@@ -257,9 +261,7 @@ function formatReports(reports: Report[]): string {
       level: 2,
       title: r.name,
       tags,
-      props: {
-        'SOURCE': r.source.id
-      },
+      props,
       content: r.annotation || ''  // No need to parse metric values since they
                                    // are stored in the annotation itself
     };
@@ -269,9 +271,13 @@ function formatReports(reports: Report[]): string {
 function formatDocuments(documents: Document[]): string {
   return formatSection('Documents', documents.map(d => {
     let tags = [...d.tags];
+    let props: Record<string, string> = {
+      'SOURCE': d.source.id
+    };
 
     if (d.assets.length > 0) {
       tags.push('ATTACH');
+      props['FILES'] = d.assets.map(asset => asset.fileName).join(', ');
     }
 
     return {
@@ -280,9 +286,7 @@ function formatDocuments(documents: Document[]): string {
       level: 2,
       title: d.name,
       tags,
-      props: {
-        'SOURCE': d.source.id
-      },
+      props,
       content: d.annotation || ''
     };
   }));
