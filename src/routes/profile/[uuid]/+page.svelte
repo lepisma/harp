@@ -18,11 +18,9 @@
 
   import JournalForm from '$lib/components/journal-form.svelte';
   import MetricForm from '$lib/components/metric-form.svelte';
-  import ReportForm from '$lib/components/report-form.svelte';
   import DocumentForm from '$lib/components/document-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
   import MetricCard from '$lib/components/metric-card.svelte';
-  import ReportCard from '$lib/components/report-card.svelte';
   import DocumentCard from '$lib/components/document-card.svelte';
   import { archiveProfile } from '$lib/fs';
   import saveAs from 'file-saver';
@@ -258,22 +256,26 @@
   </div>
 
   {#if isReportFormOpen}
-    <ReportForm
+    <DocumentForm
       onSave={ handleNewReport }
       onClose={() => isReportFormOpen = false}
+      title='New Report'
       onAssetUpload={ handleAssetUpload }
       readAsset={ readAsset }
+      enableMetricValues={ true }
       />
     {/if}
 
 <div class="grid gap-4 md:grid-cols-1">
   {#each reports as report}
-    <ReportCard
-      report={ report }
+    <DocumentCard
+      title='Report'
+      entity={ report }
       onDelete={ handleDeleteReport }
       onEdit={ handleEditReport }
       onAssetUpload={ handleAssetUpload }
       readAsset={ readAsset }
+      enableMetricValues={true}
       />
   {/each}
 </div>
@@ -290,14 +292,17 @@
     <DocumentForm
       onSave={ handleNewDocument }
       onClose={() => isDocumentFormOpen = false}
+      title='New Document'
       onAssetUpload={ handleAssetUpload }
+      readAsset={ readAsset }
       />
     {/if}
 
 <div class="grid gap-4 md:grid-cols-1">
   {#each documents as doc}
     <DocumentCard
-      doc={ doc }
+      title='Document'
+      entity={ doc }
       onDelete={ handleDeleteDocument }
       onEdit={ handleEditDocument }
       onAssetUpload={ handleAssetUpload }
