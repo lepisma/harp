@@ -175,13 +175,8 @@ function formatMetadata(metadata: Metadata): string {
       'UNIT': m.unit,
     };
 
-    if (m.range) {
-      props['RANGE'] = `${m.range[0]}-${m.range[1]}`;
-    }
-
-    if (m.healthyRange) {
-      props['HEALTHY_RANGE'] = `${m.healthyRange[0]}-${m.healthyRange[1]}`;
-    }
+    props['RANGE'] = `${m.range[0]}-${m.range[1]}`;
+    props['HEALTHY_RANGE'] = `${m.healthyRange[0]}-${m.healthyRange[1]}`;
 
     return {
       tags: m.tags,

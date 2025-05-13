@@ -16,8 +16,8 @@
   let name: string = $state('');
   let unit: string = $state('');
   let tags: string[] = $state([]);
-  let range: [number | undefined, number | undefined] | undefined = $state([undefined, undefined]);
-  let healthyRange: [number | undefined, number | undefined] | undefined = $state([undefined, undefined]);
+  let range: [number | undefined, number | undefined] = $state([undefined, undefined]);
+  let healthyRange: [number | undefined, number | undefined] = $state([undefined, undefined]);
 
   if (metric !== null) {
     id = metric.id;
@@ -66,25 +66,19 @@
         <span class="label-text">Unit & Range</span>
         <span class="flex gap-2 items-center">
           <span class="text-sm">From</span>
-          <input type="number" value={range[0] === undefined ? '' : range[0]} class="input text-sm" oninput={(e) => {
-            let num = parseFloat(e.target.value);
-            let val = isNaN(num) ? undefined : num;
-            if (range !== undefined) {
-              range[0] = val;
-            } else {
-              range = [val, undefined];
-            }
-          }} />
+          <input
+            type="number"
+            step=any
+            bind:value={() => range[0] === undefined ? '' : range[0], (v) => range[0] = v ? parseFloat(v) : undefined}
+            class="input text-sm"
+          />
           <span class="text-sm">to</span>
-          <input type="number" value={range[1] === undefined ? '' : range[1]} class="input text-sm" oninput={(e) => {
-            let num = parseFloat(e.target.value);
-            let val = isNaN(num) ? undefined : num;
-            if (range !== undefined) {
-              range[1] = val;
-            } else {
-              range = [undefined, val];
-            }
-          }} />
+          <input
+            type="number"
+            step=any
+            bind:value={() => range[1] === undefined ? '' : range[1], (v) => range[1] = v ? parseFloat(v) : undefined}
+            class="input text-sm"
+          />
           <input type="text" id="unit" required class="input text-sm" placeholder="Unit" bind:value={unit} />
         </span>
       </label>
