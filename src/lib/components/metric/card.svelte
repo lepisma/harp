@@ -2,7 +2,7 @@
   import IconTrash from '@lucide/svelte/icons/trash-2';
   import IconPencil from '@lucide/svelte/icons/pencil';
   import IconArrowRight from '@lucide/svelte/icons/arrow-right';
-  import MetricForm from '$lib/components/metric-form.svelte';
+  import MetricForm from '$lib/components/metric/form.svelte';
   import type { Metric, MetricValue } from '$lib/types';
 
   interface CardProps {

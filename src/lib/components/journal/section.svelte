@@ -1,8 +1,8 @@
 <script lang="ts">
   import IconPlus from '@lucide/svelte/icons/plus';
   import type { JournalEntry, Journal, Asset } from '$lib/types';
-  import JournalForm from '$lib/components/journal-form.svelte';
-  import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
+  import JournalForm from '$lib/components/journal/form.svelte';
+  import JournalEntryCard from '$lib/components/journal/entry-card.svelte';
 
   interface Props {
     journals: Journal[];
@@ -45,7 +45,6 @@
   <button type="button" onclick={() => isJournalFormOpen = true} class="btn btn-sm preset-outlined">
     <span>New Entry</span>
     <IconPlus size={18} />
-  </button>
 </div>
 
 {#if isJournalFormOpen}

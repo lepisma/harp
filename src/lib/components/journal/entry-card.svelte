@@ -1,7 +1,7 @@
 <script lang="ts">
   import IconTrash from '@lucide/svelte/icons/trash-2';
   import IconPencil from '@lucide/svelte/icons/pencil';
-  import JournalForm from '$lib/components/journal-form.svelte';
+  import JournalForm from '$lib/components/journal/form.svelte';
   import type { Asset, JournalEntry } from '$lib/types';
   import { triggerOpen, transformAttachmentLinks } from '$lib/utils';
   import { formatOrgToHTML } from '$lib/org';

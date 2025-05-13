@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Metric, MetricValue } from '$lib/types';
-  import MetricForm from '$lib/components/metric-form.svelte';
-  import MetricCard from '$lib/components/metric-card.svelte';
+  import MetricForm from '$lib/components/metric/form.svelte';
+  import MetricCard from '$lib/components/metric/card.svelte';
   import IconPlus from '@lucide/svelte/icons/plus';
 
   interface Props {

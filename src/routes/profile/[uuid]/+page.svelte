@@ -15,10 +15,10 @@
   import type { Asset, Profile, MetricValue } from '$lib/types';
   import { profileTags, profileMetricValues } from '$lib/utils';
 
-  import MetricSection from '$lib/components/metric-section.svelte';
-  import ReportSection from '$lib/components/report-section.svelte';
-  import DocumentSection from '$lib/components/document-section.svelte';
-  import JournalSection from '$lib/components/journal-section.svelte';
+  import MetricSection from '$lib/components/metric/section.svelte';
+  import ReportSection from '$lib/components/report/section.svelte';
+  import DocumentSection from '$lib/components/document/section.svelte';
+  import JournalSection from '$lib/components/journal/section.svelte';
 
   import { archiveProfile } from '$lib/fs';
   import saveAs from 'file-saver';
