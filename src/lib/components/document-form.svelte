@@ -1,7 +1,7 @@
 <script lang="ts">
   import { parseMetricValues, parseTags } from '$lib/org';
   import { formatDateForInput } from '$lib/utils';
-  import type { Asset, Report, Document, MetricValue } from '$lib/types';
+  import type { Asset, Report, Document, MetricValue, Source } from '$lib/types';
   import { triggerOpen } from '$lib/utils';
   import { fly } from 'svelte/transition';
   import { v4 as uuidv4 } from 'uuid';
@@ -23,7 +23,7 @@
   let { onSave, onClose, title, onAssetUpload, readAsset, entity = null, enableMetricValues = false }: FormProps = $props();
 
   let name: string = $state('');
-  let datetimeString: string = $state(formatDateForInput(new Date()));
+  let datetime: Date = $state(new Date());
   let uuid: string = $state(uuidv4());
   let tags: string[] = $state([]);
   let sourceName: string = $state('');
@@ -34,7 +34,7 @@
 
   if (entity !== null) {
     name = entity.name;
-    datetimeString = formatDateForInput(entity.datetime);
+    datetime = entity.datetime;
     uuid = entity.uuid;
     tags = entity.tags;
     sourceName = entity.source.id;
@@ -51,7 +51,7 @@
     let text = e.target.value;
     tags = parseTags(text);
     if (enableMetricValues) {
-      metricValues = parseMetricValues(text, new Date(datetimeString), uuid);
+      metricValues = parseMetricValues(text, datetime, uuid);
     }
   }
 
@@ -73,7 +73,7 @@
 
     let editedEntity: Entity = {
       name,
-      datetime: new Date(datetimeString),
+      datetime,
       uuid,
       tags,
       // For now we just use the source name to completely define the source
@@ -111,12 +111,18 @@
     <form onsubmit={handleSave}>
       <label class="label mb-4">
         <span class="label-text">Datetime</span>
-        <input type="datetime-local" required id="datetime" class="input text-sm" bind:value={datetimeString} />
+        <input
+          type="datetime-local"
+          required
+          id="datetime"
+          class="input text-sm"
+          bind:value={() => formatDateForInput(datetime), (v) => datetime = new Date(v)}
+        />
       </label>
 
       <label class="label mb-4">
         <span class="label-text">Title</span>
-        <input type="text" id="name" required class="input text-sm" bind:value={name} />
+        <input type="text" id="name" required class="input text-sm" bind:value={ name } />
       </label>
 
       <label class="label mb-4">
@@ -157,18 +163,19 @@
 
       <label class="label mb-4 mt-5">
         <span class="label-text">Annotation</span>
-        <textarea class="textarea" id="annotation" oninput={handleInput} bind:value={annotation} rows="2" placeholder=""></textarea>
+        <textarea class="textarea" id="annotation" oninput={ handleInput } bind:value={ annotation } rows="2" placeholder="">
+        </textarea>
       </label>
 
-      {#if tags.length + metricValues.length > 0  }
+      {#if tags.length + metricValues.length > 0}
         <div class="mb-4">
           <div class="text-xs">{#if enableMetricValues }Tags and Metrics{:else}Tags{/if}</div>
           <div class="text-xs opacity-60 pt-2">
             {#each tags as tag}
-              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">#{tag}</span>
+              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">#{ tag }</span>
             {/each}
             {#each metricValues as mv}
-              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">{mv.id} = {mv.value}</span>
+              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">{ mv.id } = { mv.value }</span>
             {/each}
           </div>
         </div>
@@ -176,7 +183,7 @@
 
       <div class="flex justify-end gap-2">
         <button type="submit" class="btn preset-filled">Save</button>
-        <button type="button" class="btn preset-outlined" onclick={onClose}>Discard</button>
+        <button type="button" class="btn preset-outlined" onclick={ onClose }>Discard</button>
       </div>
     </form>
   </div>
