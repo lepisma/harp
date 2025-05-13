@@ -1,39 +1,35 @@
 <script lang="ts">
-  import type { Database } from '$lib/db';
-  import type { Asset, Report, Profile } from '$lib/types';
-  import { saveProfile } from '$lib/ops';
+  import type { Asset, Report } from '$lib/types';
   import IconPlus from '@lucide/svelte/icons/plus';
   import DocumentForm from '$lib/components/document-form.svelte';
   import DocumentCard from '$lib/components/document-card.svelte';
 
   interface Props {
-    db: Database;
-    profile: Profile;
+    reports: Report[];
+    onChange: () => Promise<void>;
     onAssetUpload: (asset: Asset, parentId: string, data: Blob) => Promise<void>;
     readAsset: (asset: Asset, parentId: string) => Promise<Blob>;
   };
 
-  let { db, profile, onAssetUpload, readAsset }: Props = $props();
-
-  let reports: Report[] = $derived(profile !== null ? profile.reports : []);
+  let { reports = $bindable(), onAssetUpload, readAsset, onChange }: Props = $props();
   let isReportFormOpen = $state(false);
 
   async function handleNewReport(report: Report) {
-    profile.reports.push(report);
-    await saveProfile(db, profile);
+    reports.push(report);
+    await onChange();
 
     isReportFormOpen = false;
   }
 
   async function handleDeleteReport(report: Report) {
     if (window.confirm('Do you really want to delete this report?')) {
-      profile.reports = profile.reports.filter(r => r.uuid !== report.uuid);
-      await saveProfile(db, profile);
+      reports = reports.filter(r => r.uuid !== report.uuid);
+      await onChange();
     }
   }
   async function handleEditReport(report: Report) {
-    profile.reports = profile.reports.map(r => (r.uuid === report.uuid) ? report : r);
-    await saveProfile(db, profile);
+    reports = reports.map(r => (r.uuid === report.uuid) ? report : r);
+    await onChange();
   }
 </script>
 

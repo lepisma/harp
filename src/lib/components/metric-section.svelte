@@ -1,41 +1,35 @@
 <script lang="ts">
-  import type { Database } from '$lib/db';
-  import { saveProfile } from '$lib/ops';
   import type { Metric, MetricValue } from '$lib/types';
-  import type { Profile } from '$lib/types';
   import MetricForm from '$lib/components/metric-form.svelte';
   import MetricCard from '$lib/components/metric-card.svelte';
-  import { profileMetricValues } from '$lib/utils';
   import IconPlus from '@lucide/svelte/icons/plus';
 
   interface Props {
-    db: Database;
-    profile: Profile;
+    metrics: Metric[];
+    metricValues: MetricValue[];
+    onChange: () => Promise<void>;
   }
 
-  let { db, profile }: Props = $props();
-
-  let metrics: Metric[] = $derived(profile !== null ? profile.metadata.metrics : []);
-  let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
+  let { metrics = $bindable(), metricValues, onChange }: Props = $props();
   let isMetricFormOpen = $state(false);
 
   async function handleNewMetric(metric: Metric) {
-    profile.metadata.metrics.push(metric);
-    await saveProfile(db, profile);
+    metrics.push(metric);
+    await onChange();
 
     isMetricFormOpen = false;
   }
 
   async function handleDeleteMetric(metric: Metric) {
     if (window.confirm('Do you really want to delete this metric?')) {
-      profile.metadata.metrics = profile.metadata.metrics.filter(m => m.id !== metric.id);
-      await saveProfile(db, profile);
+      metrics = metrics.filter(m => m.id !== metric.id);
+      await onChange();
     }
   }
 
   async function handleEditMetric(metric: Metric) {
-    profile.metadata.metrics = profile.metadata.metrics.map(m => (m.id === metric.id) ? metric : m);
-    await saveProfile(db, profile);
+    metrics = metrics.map(m => (m.id === metric.id) ? metric : m);
+    await onChange();
   }
 </script>
 

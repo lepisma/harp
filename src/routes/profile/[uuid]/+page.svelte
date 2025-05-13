@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { loadDB } from '$lib/db';
-  import { loadAsset, loadProfile, saveAsset } from '$lib/ops';
+  import { loadDB, type Database } from '$lib/db';
+  import { loadAsset, loadProfile, saveAsset, saveProfile } from '$lib/ops';
   import { Tabs } from '@skeletonlabs/skeleton-svelte';
   import IconNotepadText from '@lucide/svelte/icons/notepad-text';
   import IconChartScatter from '@lucide/svelte/icons/chart-scatter';
@@ -12,8 +12,8 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Asset } from '$lib/types';
-  import { profileTags } from '$lib/utils';
+  import type { Asset, Profile } from '$lib/types';
+  import { profileTags, profileMetricValues } from '$lib/utils';
 
   import MetricSection from '$lib/components/metric-section.svelte';
   import ReportSection from '$lib/components/report-section.svelte';
@@ -25,10 +25,11 @@
 
   let profileId = $page.params.uuid;
 
-  let db = $state(null);
-  let profile = $state(null);
+  let db: Database | null = $state(null);
+  let profile: Profile | null = $state(null);
 
   let tags: string[] = $derived(profile !== null ? profileTags(profile) : []);
+  let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
 
   let selectedTab = $state('journal');
 
@@ -43,6 +44,10 @@
 
   async function readAsset(asset: Asset, parentId: string): Promise<Blob> {
     return await loadAsset(db, parentId, asset);
+  }
+
+  async function handleProfileSave() {
+    await saveProfile(db, profile);
   }
 
   onMount(async () => {
@@ -114,30 +119,31 @@
             {#snippet content()}
             <Tabs.Panel value="journal">
               <JournalSection
-                db={ db }
-                profile={ profile }
+                bind:journals={ profile.journals }
+                onChange={ handleProfileSave }
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="metrics">
               <MetricSection
-                db={ db }
-                profile={ profile }
+                bind:metrics={ profile.metadata.metrics }
+                metricValues={ metricValues }
+                onChange={ handleProfileSave }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="reports">
               <ReportSection
-                db={ db }
-                profile={ profile }
+                bind:reports={ profile.reports }
+                onChange={ handleProfileSave }
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="documents">
               <DocumentSection
-                db={ db }
-                profile={ profile }
+                bind:documents={ profile.documents }
+                onChange={ handleProfileSave }
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
                 />

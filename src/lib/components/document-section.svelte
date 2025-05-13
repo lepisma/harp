@@ -1,40 +1,36 @@
 <script lang="ts">
-  import type { Database } from '$lib/db';
-  import type { Asset, Document, Profile } from '$lib/types';
-  import { saveProfile } from '$lib/ops';
+  import type { Asset, Document } from '$lib/types';
   import IconPlus from '@lucide/svelte/icons/plus';
   import DocumentForm from '$lib/components/document-form.svelte';
   import DocumentCard from '$lib/components/document-card.svelte';
 
   interface Props {
-    db: Database;
-    profile: Profile;
+    documents: Document[];
+    onChange: () => Promise<void>;
     onAssetUpload: (asset: Asset, parentId: string, data: Blob) => Promise<void>;
     readAsset: (asset: Asset, parentId: string) => Promise<Blob>;
   };
 
-  let { db, profile, onAssetUpload, readAsset }: Props = $props();
-
-  let documents: Document[] = $derived(profile !== null ? profile.documents : []);
+  let { documents = $bindable(), onChange, onAssetUpload, readAsset }: Props = $props();
   let isDocumentFormOpen = $state(false);
 
   async function handleNewDocument(doc: Document) {
-    profile.documents.push(doc);
-    await saveProfile(db, profile);
+    documents.push(doc);
+    await onChange();
 
     isDocumentFormOpen = false;
   }
 
   async function handleDeleteDocument(doc: Document) {
     if (window.confirm('Do you really want to delete this document?')) {
-      profile.documents = profile.documents.filter(d => d.uuid !== doc.uuid);
-      await saveProfile(db, profile);
+      documents = documents.filter(d => d.uuid !== doc.uuid);
+      await onChange();
     }
   }
 
   async function handleEditDocument(doc: Document) {
-    profile.documents = profile.documents.map(d => (d.uuid === doc.uuid) ? doc : d);
-    await saveProfile(db, profile);
+    documents = documents.map(d => (d.uuid === doc.uuid) ? doc : d);
+    await onChange();
   }
 </script>
 
