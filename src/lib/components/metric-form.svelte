@@ -68,7 +68,7 @@
           <span class="text-sm">From</span>
           <input type="number" value={range[0] === undefined ? '' : range[0]} class="input text-sm" oninput={(e) => {
             let num = parseFloat(e.target.value);
-            let val = isNan(num) ? undefined : num;
+            let val = isNaN(num) ? undefined : num;
             if (range !== undefined) {
               range[0] = val;
             } else {
@@ -78,7 +78,7 @@
           <span class="text-sm">to</span>
           <input type="number" value={range[1] === undefined ? '' : range[1]} class="input text-sm" oninput={(e) => {
             let num = parseFloat(e.target.value);
-            let val = isNan(num) ? undefined : num;
+            let val = isNaN(num) ? undefined : num;
             if (range !== undefined) {
               range[1] = val;
             } else {
