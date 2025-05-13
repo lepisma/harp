@@ -13,15 +13,16 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Asset, JournalEntry, Journal, Metric, MetricValue, Report, Document } from '$lib/types';
-  import { profileMetricValues, profileTags } from '$lib/utils';
+  import type { Asset, JournalEntry, Journal, Report, Document } from '$lib/types';
+  import { profileTags } from '$lib/utils';
 
   import JournalForm from '$lib/components/journal-form.svelte';
-  import MetricForm from '$lib/components/metric-form.svelte';
   import DocumentForm from '$lib/components/document-form.svelte';
   import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
-  import MetricCard from '$lib/components/metric-card.svelte';
   import DocumentCard from '$lib/components/document-card.svelte';
+
+  import MetricSection from '$lib/components/metric-section.svelte';
+
   import { archiveProfile } from '$lib/fs';
   import saveAs from 'file-saver';
 
@@ -30,15 +31,12 @@
   let db = $state(null);
   let profile = $state(null);
   let journal: Journal[] = $derived(profile !== null ? profile.journals[0] : []);
-  let metrics: Metric[] = $derived(profile !== null ? profile.metadata.metrics : []);
   let reports: Report[] = $derived(profile !== null ? profile.reports : []);
   let documents: Document[] = $derived(profile !== null ? profile.documents : []);
-  let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
   let tags: string[] = $derived(profile !== null ? profileTags(profile) : []);
 
   let selectedTab = $state('journal');
   let isJournalFormOpen = $state(false);
-  let isMetricFormOpen = $state(false);
   let isReportFormOpen = $state(false);
   let isDocumentFormOpen = $state(false);
 
@@ -55,13 +53,6 @@
     }
 
     isJournalFormOpen = false;
-  }
-
-  async function handleNewMetric(metric: Metric) {
-    profile.metadata.metrics.push(metric);
-    await saveProfile(db, profile);
-
-    isMetricFormOpen = false;
   }
 
   async function handleNewReport(report: Report) {
@@ -99,13 +90,6 @@
     }
   }
 
-  async function handleDeleteMetric(metric: Metric) {
-    if (window.confirm('Do you really want to delete this metric?')) {
-      profile.metadata.metrics = profile.metadata.metrics.filter(m => m.id !== metric.id);
-      await saveProfile(db, profile);
-    }
-  }
-
   async function handleEditReport(report: Report) {
     profile.reports = profile.reports.map(r => (r.uuid === report.uuid) ? report : r);
     await saveProfile(db, profile);
@@ -123,11 +107,6 @@
       profile.journals[0].entries = profile.journals[0].entries.map(e => (e.uuid === entry.uuid) ? entry : e);
       await saveProfile(db, profile);
     }
-  }
-
-  async function handleEditMetric(metric: Metric) {
-    profile.metadata.metrics = profile.metadata.metrics.map(m => (m.id === metric.id) ? metric : m);
-    await saveProfile(db, profile);
   }
 
   async function handleAssetUpload(asset: Asset, parentId: string, data: Blob) {
@@ -235,30 +214,7 @@
   </div>
             </Tabs.Panel>
             <Tabs.Panel value="metrics">
-              <div class="mb-4">
-                <button type="button" onclick={() => isMetricFormOpen = true} class="btn btn-sm preset-outlined">
-    <span>Define New Metric</span>
-    <IconPlus size={18} />
-</button>
-</div>
-
-{#if isMetricFormOpen}
-  <MetricForm
-    onSave={ handleNewMetric }
-    onClose={() => isMetricFormOpen = false}
-    />
-  {/if}
-
-<div class="grid gap-4 md:grid-cols-1">
-  {#each metrics as metric}
-    <MetricCard
-      metric={ metric }
-      metricValues={ metricValues }
-      onDelete={ handleDeleteMetric }
-      onEdit={ handleEditMetric }
-      />
-  {/each}
-</div>
+              <MetricSection db={ db } profile={ profile } />
 </Tabs.Panel>
 <Tabs.Panel value="reports">
   <div class="mb-4">
