@@ -1,27 +1,24 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { loadDB } from '$lib/db';
-  import { loadAsset, loadProfile, saveAsset, saveProfile } from '$lib/ops';
+  import { loadAsset, loadProfile, saveAsset } from '$lib/ops';
   import { Tabs } from '@skeletonlabs/skeleton-svelte';
   import IconNotepadText from '@lucide/svelte/icons/notepad-text';
   import IconChartScatter from '@lucide/svelte/icons/chart-scatter';
   import IconClipboardPen from '@lucide/svelte/icons/clipboard-pen';
   import IconScanHeart from '@lucide/svelte/icons/scan-heart';
-  import IconPlus from '@lucide/svelte/icons/plus';
   import IconDownload from '@lucide/svelte/icons/download';
   import IconUpload from '@lucide/svelte/icons/upload';
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Asset, JournalEntry, Journal, Report, Document } from '$lib/types';
+  import type { Asset } from '$lib/types';
   import { profileTags } from '$lib/utils';
 
-  import JournalForm from '$lib/components/journal-form.svelte';
-  import DocumentForm from '$lib/components/document-form.svelte';
-  import JournalEntryCard from '$lib/components/journal-entry-card.svelte';
-  import DocumentCard from '$lib/components/document-card.svelte';
-
   import MetricSection from '$lib/components/metric-section.svelte';
+  import ReportSection from '$lib/components/report-section.svelte';
+  import DocumentSection from '$lib/components/document-section.svelte';
+  import JournalSection from '$lib/components/journal-section.svelte';
 
   import { archiveProfile } from '$lib/fs';
   import saveAs from 'file-saver';
@@ -30,83 +27,14 @@
 
   let db = $state(null);
   let profile = $state(null);
-  let journal: Journal[] = $derived(profile !== null ? profile.journals[0] : []);
-  let reports: Report[] = $derived(profile !== null ? profile.reports : []);
-  let documents: Document[] = $derived(profile !== null ? profile.documents : []);
+
   let tags: string[] = $derived(profile !== null ? profileTags(profile) : []);
 
   let selectedTab = $state('journal');
-  let isJournalFormOpen = $state(false);
-  let isReportFormOpen = $state(false);
-  let isDocumentFormOpen = $state(false);
 
   async function exportProfile() {
     const blob = await archiveProfile(db, profile);
     saveAs(blob, `archive-${profile.uuid}.${(new Date()).toISOString()}.harp.zip`);
-  }
-
-  async function handleNewJournalEntry(entry: JournalEntry) {
-    // Entry could be empty. We ignore them here
-    if (entry.text !== '') {
-      profile.journals[0].entries.push(entry);
-      await saveProfile(db, profile);
-    }
-
-    isJournalFormOpen = false;
-  }
-
-  async function handleNewReport(report: Report) {
-    profile.reports.push(report);
-    await saveProfile(db, profile);
-
-    isReportFormOpen = false;
-  }
-
-  async function handleNewDocument(doc: Document) {
-    profile.documents.push(doc);
-    await saveProfile(db, profile);
-
-    isDocumentFormOpen = false;
-  }
-
-  async function handleDeleteJournalEntry(entry: JournalEntry) {
-    if (window.confirm('Do you really want to delete this entry?')) {
-      profile.journals[0].entries = profile.journals[0].entries.filter(e => e.uuid !== entry.uuid);
-      await saveProfile(db, profile);
-    }
-  }
-
-  async function handleDeleteReport(report: Report) {
-    if (window.confirm('Do you really want to delete this report?')) {
-      profile.reports = profile.reports.filter(r => r.uuid !== report.uuid);
-      await saveProfile(db, profile);
-    }
-  }
-
-  async function handleDeleteDocument(doc: Document) {
-    if (window.confirm('Do you really want to delete this document?')) {
-      profile.documents = profile.documents.filter(d => d.uuid !== doc.uuid);
-      await saveProfile(db, profile);
-    }
-  }
-
-  async function handleEditReport(report: Report) {
-    profile.reports = profile.reports.map(r => (r.uuid === report.uuid) ? report : r);
-    await saveProfile(db, profile);
-  }
-
-  async function handleEditDocument(doc: Document) {
-    profile.documents = profile.documents.map(d => (d.uuid === doc.uuid) ? doc : d);
-    await saveProfile(db, profile);
-  }
-
-  async function handleEditJournalEntry(entry: JournalEntry) {
-    if (entry.text === '') {
-      await handleDeleteJournalEntry(entry);
-    } else {
-      profile.journals[0].entries = profile.journals[0].entries.map(e => (e.uuid === entry.uuid) ? entry : e);
-      await saveProfile(db, profile);
-    }
   }
 
   async function handleAssetUpload(asset: Asset, parentId: string, data: Blob) {
@@ -155,7 +83,6 @@
         <hr class="text-gray-300">
         <div class="my-4">
           <p class="text-semibold flex gap-2 mb-4"><IconFunnelPlus /><span>Filter by tags</span></p>
-
           <small class="opacity-60">
             {#each tags as tag}
               <span class="inline-block bg-gray-200 rounded-md px-2 py-1 text-sm font-semibold text-gray-700 mr-2">#{tag}</span>
@@ -186,106 +113,39 @@
             {/snippet}
             {#snippet content()}
             <Tabs.Panel value="journal">
-              <div class="mb-4">
-                <button type="button" onclick={() => isJournalFormOpen = true} class="btn btn-sm preset-outlined">
-                  <span>New Entry</span>
-                  <IconPlus size={18} />
-                </button>
-              </div>
-
-              {#if isJournalFormOpen}
-                <JournalForm
-                  onSave={ handleNewJournalEntry }
-                  onClose={() => isJournalFormOpen = false}
-                  onAssetUpload={ handleAssetUpload }
-                  />
-                {/if}
-
-<div class="grid gap-4 md:grid-cols-1">
-  {#each [...journal.entries].sort((a, b) => a.datetime < b.datetime) as entry}
-    <JournalEntryCard
-      entry={ entry }
-      onDelete={ handleDeleteJournalEntry }
-      onEdit={ handleEditJournalEntry }
-      onAssetUpload={ handleAssetUpload }
-      readAsset={ readAsset }
-      />
-    {/each}
-  </div>
+              <JournalSection
+                db={ db }
+                profile={ profile }
+                onAssetUpload={ handleAssetUpload }
+                readAsset={ readAsset }
+                />
             </Tabs.Panel>
             <Tabs.Panel value="metrics">
-              <MetricSection db={ db } profile={ profile } />
-</Tabs.Panel>
-<Tabs.Panel value="reports">
-  <div class="mb-4">
-    <button type="button" onclick={() => isReportFormOpen = true} class="btn btn-sm preset-outlined">
-      <span>New Report</span>
-      <IconPlus size={18} />
-    </button>
+              <MetricSection
+                db={ db }
+                profile={ profile }
+                />
+            </Tabs.Panel>
+            <Tabs.Panel value="reports">
+              <ReportSection
+                db={ db }
+                profile={ profile }
+                onAssetUpload={ handleAssetUpload }
+                readAsset={ readAsset }
+                />
+            </Tabs.Panel>
+            <Tabs.Panel value="documents">
+              <DocumentSection
+                db={ db }
+                profile={ profile }
+                onAssetUpload={ handleAssetUpload }
+                readAsset={ readAsset }
+                />
+            </Tabs.Panel>
+            {/snippet}
+          </Tabs>
+        </div>
+      </main>
+    </div>
   </div>
-
-  {#if isReportFormOpen}
-    <DocumentForm
-      onSave={ handleNewReport }
-      onClose={() => isReportFormOpen = false}
-      title='New Report'
-      onAssetUpload={ handleAssetUpload }
-      readAsset={ readAsset }
-      enableMetricValues={ true }
-      />
-    {/if}
-
-<div class="grid gap-4 md:grid-cols-1">
-  {#each reports as report}
-    <DocumentCard
-      title='Report'
-      entity={ report }
-      onDelete={ handleDeleteReport }
-      onEdit={ handleEditReport }
-      onAssetUpload={ handleAssetUpload }
-      readAsset={ readAsset }
-      enableMetricValues={true}
-      />
-  {/each}
-</div>
-</Tabs.Panel>
-<Tabs.Panel value="documents">
-  <div class="mb-4">
-    <button type="button" onclick={() => isDocumentFormOpen = true} class="btn btn-sm preset-outlined">
-      <span>New Document</span>
-      <IconPlus size={18} />
-    </button>
-  </div>
-
-  {#if isDocumentFormOpen}
-    <DocumentForm
-      onSave={ handleNewDocument }
-      onClose={() => isDocumentFormOpen = false}
-      title='New Document'
-      onAssetUpload={ handleAssetUpload }
-      readAsset={ readAsset }
-      />
-    {/if}
-
-<div class="grid gap-4 md:grid-cols-1">
-  {#each documents as doc}
-    <DocumentCard
-      title='Document'
-      entity={ doc }
-      onDelete={ handleDeleteDocument }
-      onEdit={ handleEditDocument }
-      onAssetUpload={ handleAssetUpload }
-      readAsset={ readAsset }
-      />
-  {/each}
-</div>
-</Tabs.Panel>
-{/snippet}
-</Tabs>
-</div>
-</main>
-</div>
-<footer>
-</footer>
-</div>
 {/if}
