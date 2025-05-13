@@ -12,7 +12,7 @@
   import IconFunnelPlus from '@lucide/svelte/icons/funnel-plus';
   import IconScrollText from '@lucide/svelte/icons/scroll-text';
   import { onMount } from 'svelte';
-  import type { Asset, Profile } from '$lib/types';
+  import type { Asset, Profile, MetricValue } from '$lib/types';
   import { profileTags, profileMetricValues } from '$lib/utils';
 
   import MetricSection from '$lib/components/metric-section.svelte';
