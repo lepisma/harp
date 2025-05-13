@@ -1,12 +1,9 @@
 <script lang="ts">
   import { parseMetricValues, parseTags } from '$lib/org';
-  import type { Asset, Source, Report, MetricValue } from '$lib/types';
+  import type { Asset, Report, MetricValue } from '$lib/types';
   import { triggerOpen } from '$lib/utils';
   import { fly } from 'svelte/transition';
   import { v4 as uuidv4 } from 'uuid';
-  import IconCamera from '@lucide/svelte/icons/camera';
-  import IconVideo from '@lucide/svelte/icons/video';
-  import IconPaperclip from '@lucide/svelte/icons/paperclip';
   import IconTrash from '@lucide/svelte/icons/square-x';
 
   let { onSave, onClose, title = 'New Report', onAssetUpload, readAsset, report = null } = $props();
@@ -87,10 +84,7 @@
   }
 </script>
 
-<div
-  class="fixed top-0 left-0 w-full h-full bg-black/50 z-50 flex items-center justify-center"
-  transition:fly={{ y: -100, duration: 300 }}
-  >
+<div class="fixed top-0 left-0 w-full h-full bg-black/50 z-50 flex items-center justify-center" transition:fly={{ y: -100, duration: 300 }}>
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
     <button class="absolute top-2 right-2 btn btn-sm" onclick={onClose}>
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
@@ -100,69 +94,76 @@
 
     <h2 class="h5 mb-5">{ title }</h2>
 
-    <label class="label mb-4">
-      <span class="label-text">Datetime</span>
-      <input type="datetime-local" id="datetime" class="input text-sm" bind:value={datetime} />
-    </label>
-
-    <label class="label mb-4">
-      <span class="label-text">Title</span>
-      <input type="text" id="name" class="input text-sm" bind:value={name} />
-    </label>
-
-    <label class="label mb-4">
-      <span class="label-text">Source</span>
-      <input type="text" id="name" class="input text-sm" bind:value={sourceName} />
-    </label>
-
-    {#if assets.length > 0}
+    <form onsubmit={handleSave}>
       <label class="label mb-4">
-        <span class="label-text">Current attachments</span>
-        <ul class="text-sm list-inside space-y-2">
-          {#each assets as asset, i }
-            <li class="flex items-start gap-2">
-              <span class="flex-shrink-0">{i + 1}.</span>
-              <div class="flex items-center flex-grow">
-                <span class="px-2 rounded-md preset-tonal">
-                  <a class="anchor" href="#" onclick={() => handleAssetClick(asset)}>{asset.fileName}</a>
-                </span>
-                <button onclick={() => handleAssetDelete(asset)} class="btn-sm rounded-md" title="Delete attachment">
-                  <IconTrash size={18} />
-                </button>
-              </div>
-            </li>
-          {/each}
-        </ul>
+        <span class="label-text">Datetime</span>
+        <input type="datetime-local" required id="datetime" class="input text-sm" bind:value={datetime} />
       </label>
-    {/if}
 
-   <label for="many-files" class="text-sm mb-4">
-     <span class="label-text">Add files to Upload</span>
-     <input id="many-files" bind:files multiple type="file" />
-    </label>
+      <label class="label mb-4">
+        <span class="label-text">Title</span>
+        <input type="text" id="name" required class="input text-sm" bind:value={name} />
+      </label>
 
-    <label class="label mb-4 mt-5">
-      <span class="label-text">Annotation</span>
-      <textarea class="textarea" id="annotation" oninput={handleInput} bind:value={annotation} rows="2" placeholder=""></textarea>
-    </label>
+      <label class="label mb-4">
+        <span class="label-text">Source</span>
+        <input type="text" id="name" required class="input text-sm" bind:value={sourceName} />
+      </label>
 
-    {#if tags.length + metricValues.length > 0  }
-      <div class="mb-4">
-        <div class="text-xs">Tags and Metrics</div>
-        <div class="text-xs opacity-60 pt-2">
-          {#each tags as tag}
-            <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">#{tag}</span>
-          {/each}
-          {#each metricValues as mv}
-            <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">{mv.id} = {mv.value}</span>
-          {/each}
+      {#if assets.length > 0}
+        <label class="label mb-4">
+          <span class="label-text">Current attachments</span>
+          <ul class="text-sm list-inside space-y-2">
+            {#each assets as asset, i }
+              <li class="flex items-start gap-2">
+                <span class="flex-shrink-0">{i + 1}.</span>
+                <div class="flex items-center flex-grow">
+                  <span class="px-2 rounded-md preset-tonal">
+                    <a class="anchor" href="#" onclick={() => handleAssetClick(asset)}>{asset.fileName}</a>
+                  </span>
+                  <button onclick={() => handleAssetDelete(asset)} class="btn-sm rounded-md" title="Delete attachment">
+                    <IconTrash size={18} />
+                  </button>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        </label>
+      {/if}
+
+      <label for="many-files" class="text-sm mb-4">
+        <span class="label-text">Add files to Upload</span>
+        {#if assets.length === 0}
+          <!-- We want to force the user to upload a file when no file is attached till now -->
+          <input id="many-files" required bind:files multiple type="file" />
+        {:else}
+          <input id="many-files" bind:files multiple type="file" />
+        {/if}
+      </label>
+
+      <label class="label mb-4 mt-5">
+        <span class="label-text">Annotation</span>
+        <textarea class="textarea" id="annotation" oninput={handleInput} bind:value={annotation} rows="2" placeholder=""></textarea>
+      </label>
+
+      {#if tags.length + metricValues.length > 0  }
+        <div class="mb-4">
+          <div class="text-xs">Tags and Metrics</div>
+          <div class="text-xs opacity-60 pt-2">
+            {#each tags as tag}
+              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">#{tag}</span>
+            {/each}
+            {#each metricValues as mv}
+              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">{mv.id} = {mv.value}</span>
+            {/each}
+          </div>
         </div>
-      </div>
-    {/if}
+      {/if}
 
-    <div class="flex justify-end gap-2">
-      <button type="button" class="btn preset-filled" onclick={handleSave}>Save</button>
-      <button type="button" class="btn preset-outlined" onclick={onClose}>Discard</button>
-    </div>
+      <div class="flex justify-end gap-2">
+        <button type="submit" class="btn preset-filled">Save</button>
+        <button type="button" class="btn preset-outlined" onclick={onClose}>Discard</button>
+      </div>
+    </form>
   </div>
 </div>
