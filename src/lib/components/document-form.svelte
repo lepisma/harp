@@ -1,5 +1,6 @@
 <script lang="ts">
   import { parseMetricValues, parseTags } from '$lib/org';
+  import { formatDateForInput } from '$lib/utils';
   import type { Asset, Report, Document, MetricValue } from '$lib/types';
   import { triggerOpen } from '$lib/utils';
   import { fly } from 'svelte/transition';
@@ -44,15 +45,6 @@
       metricValues = entity.metricValues;
     }
     annotation = entity.annotation;
-  }
-
-  function formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   function handleInput(e) {

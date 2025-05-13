@@ -1,19 +1,29 @@
 <script lang="ts">
   import { parseMetricValues, parseTags } from '$lib/org';
+  import { formatDateForInput } from '$lib/utils';
   import type { Asset, JournalEntry, MetricValue } from '$lib/types';
   import { fly } from 'svelte/transition';
   import { v4 as uuidv4 } from 'uuid';
   import IconCamera from '@lucide/svelte/icons/camera';
   import IconVideo from '@lucide/svelte/icons/video';
   import IconPaperclip from '@lucide/svelte/icons/paperclip';
+  import IconX from '@lucide/svelte/icons/x';
 
-  let { onSave, onClose, title = 'New Entry', onAssetUpload, entry = null } = $props();
+  interface FormProps {
+    title?: string;
+    onSave: (entry: JournalEntry) => void;
+    onClose: () => void;
+    onAssetUpload: (asset: Asset, parentId: string, data: Blob) => Promise<void>;
+    entry?: JournalEntry | null;
+  };
 
-  let uuid = $state(uuidv4());
-  let text = $state('');
+  let { onSave, onClose, title = 'New Entry', onAssetUpload, entry = null }: FormProps = $props();
+
+  let uuid: string = $state(uuidv4());
+  let text: string = $state('');
   let tags: string[] = $state([]);
   let metricValues: MetricValue[] = $state([]);
-  let datetime = $state(formatDateForInput(new Date()));
+  let datetimeString: string = $state(formatDateForInput(new Date()));
   let assets: Asset[] = $state([]);
 
   if (entry !== null) {
@@ -21,28 +31,19 @@
     text = entry.text;
     tags = entry.tags;
     metricValues = entry.metricValues;
-    datetime = formatDateForInput(entry.datetime);
+    datetimeString = formatDateForInput(entry.datetime);
     assets = entry.assets;
-  }
-
-  function formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
   function handleInput(e) {
     let text = e.target.value;
     tags = parseTags(text);
-    metricValues = parseMetricValues(text, new Date(datetime), uuid);
+    metricValues = parseMetricValues(text, new Date(datetimeString), uuid);
   }
 
   function handleSave() {
     let editedEntry: JournalEntry = {
-      datetime: new Date(datetime),
+      datetime: new Date(datetimeString),
       uuid,
       tags,
       metricValues,
@@ -99,46 +100,46 @@
   >
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
     <button class="absolute top-2 right-2 btn btn-sm" onclick={onClose}>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
-        <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
-      </svg>
+      <IconX />
     </button>
 
     <h2 class="h5 mb-5">{ title }</h2>
 
-    <label class="label mb-4">
-      <span class="label-text">Datetime</span>
-      <input type="datetime-local" id="datetime" class="input text-sm" bind:value={datetime} />
-    </label>
+    <form onsubmit={handleSave}>
+      <label class="label mb-4">
+        <span class="label-text">Datetime</span>
+        <input type="datetime-local" required id="datetime" class="input text-sm" bind:value={datetimeString} />
+      </label>
 
-    <label class="label mb-4">
-      <span class="label-text">Content</span>
-      <textarea class="textarea" id="text" oninput={handleInput} bind:value={text} rows="4" placeholder=""></textarea>
-    </label>
+      <label class="label mb-4">
+        <span class="label-text">Content</span>
+        <textarea class="textarea" required id="text" oninput={handleInput} bind:value={text} rows="4" placeholder=""></textarea>
+      </label>
 
-    <div class="flex gap-2 mb-4">
-      <button disabled class="btn-sm preset-outlined rounded-md" title="Insert photo from camera"><IconCamera size={18} /></button>
-      <button disabled class="btn-sm preset-outlined rounded-md" title="Insert video from camera"><IconVideo size={18} /></button>
-      <button onclick={handleFileUpload} class="btn-sm preset-outlined rounded-md" title="Insert a file"><IconPaperclip size={18} /></button>
-    </div>
-
-    {#if tags.length + metricValues.length > 0  }
-      <div class="mb-4">
-        <div class="text-xs">Tags and Metrics</div>
-        <div class="text-xs opacity-60 pt-2">
-          {#each tags as tag}
-            <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">#{tag}</span>
-          {/each}
-          {#each metricValues as mv}
-            <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">{mv.id} = {mv.value}</span>
-          {/each}
-        </div>
+      <div class="flex gap-2 mb-4">
+        <button disabled class="btn-sm preset-outlined rounded-md" title="Insert photo from camera"><IconCamera size={18} /></button>
+        <button disabled class="btn-sm preset-outlined rounded-md" title="Insert video from camera"><IconVideo size={18} /></button>
+        <button onclick={handleFileUpload} class="btn-sm preset-outlined rounded-md" title="Insert a file"><IconPaperclip size={18} /></button>
       </div>
-    {/if}
 
-    <div class="flex justify-end gap-2">
-      <button type="button" class="btn preset-filled" onclick={handleSave}>Save</button>
-      <button type="button" class="btn preset-outlined" onclick={onClose}>Discard</button>
-    </div>
+      {#if tags.length + metricValues.length > 0  }
+        <div class="mb-4">
+          <div class="text-xs">Tags and Metrics</div>
+          <div class="text-xs opacity-60 pt-2">
+            {#each tags as tag}
+              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">#{tag}</span>
+            {/each}
+            {#each metricValues as mv}
+              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 font-semibold text-gray-700 mr-2">{mv.id} = {mv.value}</span>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <div class="flex justify-end gap-2">
+        <button type="submit" class="btn preset-filled">Save</button>
+        <button type="button" class="btn preset-outlined" onclick={onClose}>Discard</button>
+      </div>
+    </form>
   </div>
 </div>
