@@ -4,6 +4,7 @@
   import IconArrowRight from '@lucide/svelte/icons/arrow-right';
   import MetricForm from '$lib/components/metric/form.svelte';
   import type { Metric, MetricValue } from '$lib/types';
+  import { formatDatetime } from '$lib/utils';
 
   interface CardProps {
     metric: Metric;
@@ -64,8 +65,8 @@
         <ul>
           {#each relevantMetricValues as mv}
             <li>
-              <span>{mv.datetime.toLocaleString()}:</span>
-              <span class="font-bold">{mv.value} {metric.unit}</span>
+              <span>{ formatDatetime(mv.datetime) }:</span>
+              <span class="font-bold">{ mv.value } { metric.unit }</span>
             </li>
           {/each}
         </ul>

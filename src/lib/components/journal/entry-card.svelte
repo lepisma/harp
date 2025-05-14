@@ -3,7 +3,7 @@
   import IconPencil from '@lucide/svelte/icons/pencil';
   import JournalForm from '$lib/components/journal/form.svelte';
   import type { Asset, JournalEntry } from '$lib/types';
-  import { triggerOpen, transformAttachmentLinks } from '$lib/utils';
+  import { triggerOpen, transformAttachmentLinks, formatDatetime } from '$lib/utils';
   import { formatOrgToHTML } from '$lib/org';
 
   interface CardProps {
@@ -51,7 +51,7 @@
   <article class="space-y-2">
     <header class="flex items-center justify-between">
       <span class="text-sm bg-gray-100 dark:bg-gray-800 my-2 p-1 px-5">
-        { entry.datetime.toLocaleString() }
+        { formatDatetime(entry.datetime) }
       </span>
       <span class="pr-2">
         <button type="button" onclick={() => isEditFormOpen = true} class="btn-icon preset-filled"><IconPencil size={18} /></button>

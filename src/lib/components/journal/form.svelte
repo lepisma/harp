@@ -1,6 +1,6 @@
 <script lang="ts">
   import { parseMetricValues, parseTags } from '$lib/org';
-  import { formatDateForInput } from '$lib/utils';
+  import DatetimeInput from '$lib/components/datetime-input.svelte';
   import type { Asset, JournalEntry, MetricValue } from '$lib/types';
   import { fly } from 'svelte/transition';
   import { v4 as uuidv4 } from 'uuid';
@@ -108,13 +108,7 @@
     <form onsubmit={handleSave}>
       <label class="label mb-4">
         <span class="label-text">Datetime</span>
-        <input
-          type="datetime-local"
-          required
-          id="datetime"
-          class="input text-sm"
-          bind:value={() => formatDateForInput(datetime), (v) => datetime = new Date(v)}
-          />
+        <DatetimeInput bind:datetime={ datetime } />
       </label>
 
       <label class="label mb-4">

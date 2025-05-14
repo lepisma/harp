@@ -1,6 +1,6 @@
 <script lang="ts">
   import { parseMetricValues, parseTags } from '$lib/org';
-  import { formatDateForInput } from '$lib/utils';
+  import DatetimeInput from '$lib/components/datetime-input.svelte';
   import type { Asset, Report, Document, MetricValue, Source } from '$lib/types';
   import { triggerOpen } from '$lib/utils';
   import { fly } from 'svelte/transition';
@@ -101,7 +101,7 @@
 
 <div class="fixed top-0 left-0 w-full h-full bg-black/50 z-50 flex items-center justify-center" transition:fly={{ y: -100, duration: 300 }}>
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
-    <button class="absolute top-2 right-2 btn btn-sm" onclick={onClose}>
+    <button class="absolute top-2 right-2 btn btn-sm" onclick={ onClose }>
       <IconX />
     </button>
 
@@ -110,13 +110,7 @@
     <form onsubmit={handleSave}>
       <label class="label mb-4">
         <span class="label-text">Datetime</span>
-        <input
-          type="datetime-local"
-          required
-          id="datetime"
-          class="input text-sm"
-          bind:value={() => formatDateForInput(datetime), (v) => datetime = new Date(v)}
-        />
+        <DatetimeInput bind:datetime={ datetime } />
       </label>
 
       <label class="label mb-4">

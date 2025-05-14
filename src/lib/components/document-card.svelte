@@ -4,7 +4,7 @@
   import IconPaperclip from '@lucide/svelte/icons/paperclip';
   import DocumentForm from '$lib/components/document-form.svelte';
   import type { Asset, Report, Document } from '$lib/types';
-  import { triggerOpen } from '$lib/utils';
+  import { triggerOpen, formatDatetime } from '$lib/utils';
   import { formatOrgToHTML } from '$lib/org';
 
   type Entity = Report | Document;
@@ -45,7 +45,7 @@
   <article class="space-y-2">
     <header class="flex items-center justify-between">
       <span class="text-sm bg-gray-100 dark:bg-gray-800 my-2 p-1 px-5">
-        {entity.datetime.toLocaleString()}
+        { formatDatetime(entity.datetime) }
       </span>
       <span class="pr-2">
         <button type="button" onclick={() => isEditFormOpen = true} class="btn-icon preset-filled"><IconPencil size={18} /></button>
