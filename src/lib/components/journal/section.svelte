@@ -9,10 +9,25 @@
     onChange: () => Promise<void>;
     onAssetUpload: (asset: Asset, parentId: string, data: Blob) => Promise<void>;
     readAsset: (asset: Asset, parentId: string) => Promise<Blob>;
+    selectedTags?: string[];
   };
 
-  let { journals = $bindable(), onChange, onAssetUpload, readAsset }: Props = $props();
+  let { journals = $bindable(), onChange, onAssetUpload, readAsset, selectedTags = [] }: Props = $props();
   let isJournalFormOpen = $state(false);
+
+  let entries = $derived.by(() => {
+    let output = [...journals[0].entries];
+    output.sort((a, b) => a.datetime < b.datetime);
+    return output;
+  });
+
+  let filteredEntries = $derived.by(() => {
+    if (selectedTags.length > 0) {
+      return entries.filter(entry => entry.tags.some(tag => selectedTags.includes(tag)));
+    } else {
+      return entries;
+    }
+  });
 
   async function handleNewJournalEntry(entry: JournalEntry) {
     // Entry could be empty. We ignore them here
@@ -47,6 +62,14 @@
     <IconPlus size={18} />
 </div>
 
+<div class="text-sm text-gray-500 italic">
+  {#if filteredEntries.length < entries.length}
+    Showing { filteredEntries.length } of total { entries.length } entries
+  {:else}
+    Showing all entries
+  {/if}
+</div>
+
 {#if isJournalFormOpen}
   <JournalForm
     onSave={ handleNewJournalEntry }
@@ -56,7 +79,7 @@
 {/if}
 
 <div class="grid gap-4 md:grid-cols-1">
-  {#each [...journals[0].entries].sort((a, b) => a.datetime < b.datetime) as entry}
+  {#each filteredEntries as entry}
     <JournalEntryCard
       entry={ entry }
       onDelete={ handleDeleteJournalEntry }

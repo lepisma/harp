@@ -31,7 +31,24 @@
   let tags: string[] = $derived(profile !== null ? profileTags(profile) : []);
   let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
 
+  let selectedTags: string[] = $state([]);
   let selectedTab = $state('journal');
+
+  function onTagClick(e: Event, tag: string) {
+    let btn = e.target;
+
+    if (btn.classList.contains('selected')) {
+      selectedTags = selectedTags.filter(t => t !== tag);
+      btn.classList.remove('preset-filled');
+      btn.classList.add('preset-tonal');
+    } else {
+      selectedTags.push(tag);
+      btn.classList.remove('preset-tonal');
+      btn.classList.add('preset-filled');
+    }
+
+    btn.classList.toggle('selected');
+  }
 
   async function exportProfile() {
     const blob = await archiveProfile(db, profile);
@@ -87,10 +104,10 @@
 
         <hr class="text-gray-300">
         <div class="my-4">
-          <p class="text-semibold flex gap-2 mb-4"><IconFunnelPlus /><span>Filter by tags</span></p>
+          <p class="flex gap-2 mb-4"><IconFunnelPlus /><span>Filter by tags</span></p>
           <small class="opacity-60">
             {#each tags as tag}
-              <span class="inline-block bg-gray-200 rounded-md px-2 py-1 text-sm font-semibold text-gray-700 mr-2">#{tag}</span>
+              <button onclick={ (e) => onTagClick(e, tag) } class="btn btn-sm preset-tonal rounded-md font-semibold px-2 py-1 mr-2">#{ tag }</button>
             {/each}
           </small>
         </div>
@@ -123,6 +140,7 @@
                 onChange={ handleProfileSave }
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
+                selectedTags={ selectedTags }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="metrics">
@@ -130,6 +148,7 @@
                 bind:metrics={ profile.metadata.metrics }
                 metricValues={ metricValues }
                 onChange={ handleProfileSave }
+                selectedTags={ selectedTags }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="reports">
@@ -138,6 +157,7 @@
                 onChange={ handleProfileSave }
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
+                selectedTags={ selectedTags }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="documents">
@@ -146,6 +166,7 @@
                 onChange={ handleProfileSave }
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
+                selectedTags={ selectedTags }
                 />
             </Tabs.Panel>
             {/snippet}

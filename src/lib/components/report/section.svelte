@@ -9,10 +9,19 @@
     onChange: () => Promise<void>;
     onAssetUpload: (asset: Asset, parentId: string, data: Blob) => Promise<void>;
     readAsset: (asset: Asset, parentId: string) => Promise<Blob>;
+    selectedTags?: string[];
   };
 
-  let { reports = $bindable(), onAssetUpload, readAsset, onChange }: Props = $props();
+  let { reports = $bindable(), onAssetUpload, readAsset, onChange, selectedTags = [] }: Props = $props();
   let isReportFormOpen = $state(false);
+
+  let filteredReports = $derived.by(() => {
+    if (selectedTags.length > 0) {
+      return reports.filter(report => report.tags.some(tag => selectedTags.includes(tag)));
+    } else {
+      return reports;
+    }
+  });
 
   async function handleNewReport(report: Report) {
     reports.push(report);
@@ -40,6 +49,14 @@
   </button>
 </div>
 
+<div class="text-sm text-gray-500 italic">
+  {#if filteredReports.length < reports.length}
+    Showing { filteredReports.length } of total { reports.length } reports
+  {:else}
+    Showing all reports
+  {/if}
+</div>
+
 {#if isReportFormOpen}
   <DocumentForm
     onSave={ handleNewReport }
@@ -52,7 +69,7 @@
 {/if}
 
 <div class="grid gap-4 md:grid-cols-1">
-  {#each reports as report}
+  {#each filteredReports as report}
     <DocumentCard
       title='Report'
       entity={ report }

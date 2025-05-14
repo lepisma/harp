@@ -9,10 +9,19 @@
     onChange: () => Promise<void>;
     onAssetUpload: (asset: Asset, parentId: string, data: Blob) => Promise<void>;
     readAsset: (asset: Asset, parentId: string) => Promise<Blob>;
+    selectedTags?: string[];
   };
 
-  let { documents = $bindable(), onChange, onAssetUpload, readAsset }: Props = $props();
+  let { documents = $bindable(), onChange, onAssetUpload, readAsset, selectedTags = [] }: Props = $props();
   let isDocumentFormOpen = $state(false);
+
+  let filteredDocuments = $derived.by(() => {
+    if (selectedTags.length > 0) {
+      return documents.filter(doc => doc.tags.some(tag => selectedTags.includes(tag)));
+    } else {
+      return documents;
+    }
+  });
 
   async function handleNewDocument(doc: Document) {
     documents.push(doc);
@@ -41,6 +50,14 @@
   </button>
 </div>
 
+<div class="text-sm text-gray-500 italic">
+  {#if filteredDocuments.length < documents.length}
+    Showing { filteredDocuments.length } of total { documents.length } documents
+  {:else}
+    Showing all documents
+  {/if}
+</div>
+
 {#if isDocumentFormOpen}
   <DocumentForm
     onSave={ handleNewDocument }
@@ -52,7 +69,7 @@
 {/if}
 
 <div class="grid gap-4 md:grid-cols-1">
-  {#each documents as doc}
+  {#each filteredDocuments as doc}
     <DocumentCard
       title='Document'
       entity={ doc }

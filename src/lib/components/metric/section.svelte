@@ -8,10 +8,19 @@
     metrics: Metric[];
     metricValues: MetricValue[];
     onChange: () => Promise<void>;
+    selectedTags?: string[];
   }
 
-  let { metrics = $bindable(), metricValues, onChange }: Props = $props();
+  let { metrics = $bindable(), metricValues, onChange, selectedTags = [] }: Props = $props();
   let isMetricFormOpen = $state(false);
+
+  let filteredMetrics = $derived.by(() => {
+    if (selectedTags.length > 0) {
+      return metrics.filter(metric => metric.tags.some(tag => selectedTags.includes(tag)));
+    } else {
+      return metrics;
+    }
+  });
 
   async function handleNewMetric(metric: Metric) {
     metrics.push(metric);
@@ -40,6 +49,14 @@
   </button>
 </div>
 
+<div class="text-sm text-gray-500 italic">
+  {#if filteredMetrics.length < metrics.length}
+    Showing { filteredMetrics.length } of total { metrics.length } metrics
+  {:else}
+    Showing all metrics
+  {/if}
+</div>
+
 {#if isMetricFormOpen}
   <MetricForm
     onSave={ handleNewMetric }
@@ -48,7 +65,7 @@
 {/if}
 
 <div class="grid gap-4 md:grid-cols-1">
-  {#each metrics as metric}
+  {#each filteredMetrics as metric}
     <MetricCard
       metric={ metric }
       metricValues={ metricValues }
