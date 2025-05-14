@@ -23,6 +23,12 @@ const DB_VERSION = 2;
 export type Database = IDBPDatabase<HarpDB>;
 
 export async function loadDB(): Promise<Database> {
+  // We also ask for persistent storage permission here since that's essential
+  // for keeping the storage reliable.
+  if (!await navigator.storage.persisted()) {
+    await navigator.storage.persist();
+  }
+
   const db = await openDB<HarpDB>(DB_NAME, DB_VERSION, {
     upgrade(db) {
       db.createObjectStore('profiles', {
