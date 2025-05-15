@@ -13,11 +13,9 @@ export async function shareAsPDF(profile: Profile) {
       bold: 'https://cdn.jsdelivr.net/npm/typeface-et-book@0.0.2/et-book/et-book/et-book-bold-line-figures/et-book-bold-line-figures.ttf',
     },
 
-    Roboto: {
-      normal: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf',
-      bold: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Medium.ttf',
-      italics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Italic.ttf',
-      bolditalics: 'https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-MediumItalic.ttf'
+    FiraCode: {
+      normal: 'https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/ttf/FiraCode-Regular.ttf',
+      bold: 'https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/ttf/FiraCode-Bold.ttf',
     },
   };
 
@@ -51,12 +49,15 @@ export async function shareAsPDF(profile: Profile) {
           bodyLines.push({ text: it.name, fontSize: 20 });
           bodyLines.push({ text: `From ${it.source.id}`, italics: true });
 
+          bodyLines.push('\nAttachments:');
+          let lis = [];
+          for (const asset of it.assets) {
+            lis.push({ text: asset.fileName, font: 'FiraCode', fontSize: 10, decoration: 'underline'});
+          }
+          bodyLines.push({ ol: lis });
+
           if (it.annotation.trim() !== '') {
             bodyLines.push({ text: `\n${it.annotation}` });
-          }
-
-          for (const asset of it.assets) {
-            bodyLines.push('\n' + asset.fileName);
           }
         } else {
           // This is journal entry
@@ -69,8 +70,8 @@ export async function shareAsPDF(profile: Profile) {
           bodyLines.push('\n' + it.text);
         }
         let lines = [
-          { text: '\n' + it.datetime.toLocaleString(), color: '#fff', background: '#666' },
-          { text: itemType, color: '#333', bold: true },
+          { text: '\n\n' + it.datetime.toLocaleString(), color: '#000', background: '#ddd', font: 'FiraCode', fontSize: 10 },
+          { text: itemType, color: '#333', italics: true },
           ...bodyLines,
         ];
 
