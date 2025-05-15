@@ -85,7 +85,7 @@
             </button>
           </div>
           <div>
-            <button type="button" onclick={ exportProfile } class="btn btn-sm preset-filled">
+            <button type="button" onclick={ () => exportProfile(db, profile) } class="btn btn-sm preset-filled">
               <span>Export</span>
               <IconDownload size={14} />
             </button>
