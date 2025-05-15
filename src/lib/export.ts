@@ -63,7 +63,7 @@ export async function shareAsPDF(profile: Profile) {
           itemType = 'Journal Entry';
           if (it.metricValues.length > 0) {
             for (const mv of it.metricValues) {
-              bodyLines.push({ text: `${mv.id} = ${mv.value} ${profile?.metadata.metrics.find(metric => metric.id === mv.id)?.unit}`, bold: true });
+              bodyLines.push({ text: `${mv.id} = ${mv.value} ${profile?.metadata.metrics.find(metric => metric.id === mv.id)?.unit || ''}`, bold: true });
             }
           }
           bodyLines.push('\n' + it.text);
