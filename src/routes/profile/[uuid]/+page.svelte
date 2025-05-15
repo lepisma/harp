@@ -19,9 +19,8 @@
   import ReportSection from '$lib/components/report/section.svelte';
   import DocumentSection from '$lib/components/document/section.svelte';
   import JournalSection from '$lib/components/journal/section.svelte';
+  import { exportProfile, shareAsPDF } from '$lib/export';
 
-  import { archiveProfile } from '$lib/fs';
-  import saveAs from 'file-saver';
 
   let profileId = $page.params.uuid;
 
@@ -48,11 +47,6 @@
     }
 
     btn.classList.toggle('selected');
-  }
-
-  async function exportProfile() {
-    const blob = await archiveProfile(db, profile);
-    saveAs(blob, `archive-${profile.uuid}.${(new Date()).toISOString()}.harp.zip`);
   }
 
   async function handleAssetUpload(asset: Asset, parentId: string, data: Blob) {
@@ -85,13 +79,13 @@
       <main class="col-span-1 p-4">
         <div class="mb-5 flex items-center justify-between gap-2">
           <div>
-            <button type="button" disabled class="btn btn-sm preset-filled">
-              <span>Share Selection</span>
+            <button type="button" onclick={() => shareAsPDF(profile)} class="btn btn-sm preset-filled">
+              <span>View as PDF</span>
               <IconScrollText size={14} />
             </button>
           </div>
           <div>
-            <button type="button" onclick={exportProfile} class="btn btn-sm preset-filled">
+            <button type="button" onclick={ exportProfile } class="btn btn-sm preset-filled">
               <span>Export</span>
               <IconDownload size={14} />
             </button>
