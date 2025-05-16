@@ -35,8 +35,8 @@
     assets = entry.assets;
   }
 
-  function handleInput(e) {
-    let text = e.target.value;
+  function handleInput(e: Event) {
+    let text = e.target?.value;
     tags = parseTags(text);
     metricValues = parseMetricValues(text, datetime, uuid);
   }
@@ -75,7 +75,7 @@
         let textarea = document.getElementById('text');
 
         // Try to insert at cursor, or just at the end
-        const insertAt = textarea.selectionEnd;
+        const insertAt = textarea?.selectionEnd;
         const insertText = `[[attachment:${asset.fileName}][${asset.fileName}]]`
         if (insertAt) {
           text = text.substring(0, insertAt) + insertText + text.substring(insertAt);
@@ -117,9 +117,9 @@
       </label>
 
       <div class="flex gap-2 mb-4">
-        <button disabled class="btn-sm preset-outlined rounded-md" title="Insert photo from camera"><IconCamera size={18} /></button>
-        <button disabled class="btn-sm preset-outlined rounded-md" title="Insert video from camera"><IconVideo size={18} /></button>
-        <button onclick={handleFileUpload} class="btn-sm preset-outlined rounded-md" title="Insert a file"><IconPaperclip size={18} /></button>
+        <button type="button" disabled class="btn-sm preset-outlined rounded-md" title="Insert photo from camera"><IconCamera size={18} /></button>
+        <button type="button" disabled class="btn-sm preset-outlined rounded-md" title="Insert video from camera"><IconVideo size={18} /></button>
+        <button type="button" onclick={handleFileUpload} class="btn-sm preset-outlined rounded-md" title="Insert a file"><IconPaperclip size={18} /></button>
       </div>
 
       {#if tags.length + metricValues.length > 0  }
