@@ -58,7 +58,12 @@
         <span class="label-text">Metric Name & ID</span>
         <span class="flex gap-2">
           <input type="text" required id="name" class="input text-sm" placeholder="Name" bind:value={name} />
-          <input type="text" required id="id" class="input text-sm" placeholder="Short ID" bind:value={id} />
+          {#if metric !== null}
+            <!-- We don't allow changing metric id -->
+            <input type="text" disabled id="id" class="input text-sm" placeholder="Short ID" bind:value={id} />
+          {:else}
+            <input type="text" required id="id" class="input text-sm" placeholder="Short ID" bind:value={id} />
+          {/if}
         </span>
       </label>
 
