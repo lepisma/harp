@@ -79,8 +79,12 @@
       <main class="col-span-1 p-4">
         <div class="mb-5 flex items-center justify-between gap-2">
           <div>
-            <button type="button" onclick={async () => await shareAsPDF(db, profile)} class="btn btn-sm preset-filled">
-              <span>View as PDF</span>
+            <button type="button" onclick={async () => await shareAsPDF(db, profile, selectedTags)} class="btn btn-sm preset-filled">
+              {#if selectedTags.length > 0}
+                <span>Share selection as PDF</span>
+              {:else}
+                <span>Share as PDF</span>
+              {/if}
               <IconScrollText size={14} />
             </button>
           </div>
