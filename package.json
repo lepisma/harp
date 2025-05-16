@@ -33,6 +33,7 @@
 		"file-saver": "^2.0.5",
 		"idb": "^8.0.3",
 		"jszip": "^3.10.1",
+		"pdf-to-images-browser": "^0.1.8",
 		"pdfmake": "^0.2.20",
 		"rehype-stringify": "^10.0.1",
 		"unified": "^11.0.5",

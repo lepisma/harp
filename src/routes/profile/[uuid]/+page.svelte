@@ -79,13 +79,13 @@
       <main class="col-span-1 p-4">
         <div class="mb-5 flex items-center justify-between gap-2">
           <div>
-            <button type="button" onclick={() => shareAsPDF(profile)} class="btn btn-sm preset-filled">
+            <button type="button" onclick={async () => await shareAsPDF(db, profile)} class="btn btn-sm preset-filled">
               <span>View as PDF</span>
               <IconScrollText size={14} />
             </button>
           </div>
           <div>
-            <button type="button" onclick={ () => exportProfile(db, profile) } class="btn btn-sm preset-filled">
+            <button type="button" onclick={async () => await exportProfile(db, profile)} class="btn btn-sm preset-filled">
               <span>Export</span>
               <IconDownload size={14} />
             </button>
