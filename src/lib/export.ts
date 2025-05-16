@@ -27,7 +27,10 @@ export async function shareAsPDF(profile: Profile) {
   items.sort((a, b) => a.datetime < b.datetime);
 
   let dt = new Date();
+  const A4Width = 595.28;
   let docDefinition = {
+    pageSize: 'A4',
+    pageMargins: [40, 60, 40, 60],
     content: [
       { text: 'harp', color: 'gray', italics: true },
       { text: `Health Record for ${profile.name}`, fontSize: 20 },
@@ -46,8 +49,8 @@ export async function shareAsPDF(profile: Profile) {
             // This is document
             itemType = 'Document';
           }
-          bodyLines.push({ text: it.name, fontSize: 20 });
-          bodyLines.push({ text: `From ${it.source.id}`, italics: true });
+          bodyLines.push({ text: `${itemType} from ${it.source.id}`, color: '#333', italics: true }),
+          bodyLines.push({ text: it.name, fontSize: 18 });
 
           bodyLines.push('\nAttachments:');
           let lis = [];
@@ -62,6 +65,7 @@ export async function shareAsPDF(profile: Profile) {
         } else {
           // This is journal entry
           itemType = 'Journal Entry';
+          bodyLines.push({ text: itemType, color: '#333', italics: true });
           if (it.metricValues.length > 0) {
             for (const mv of it.metricValues) {
               bodyLines.push({ text: `${mv.id} = ${mv.value} ${profile?.metadata.metrics.find(metric => metric.id === mv.id)?.unit || ''}`, bold: true });
@@ -70,9 +74,17 @@ export async function shareAsPDF(profile: Profile) {
           bodyLines.push('\n' + it.text);
         }
         let lines = [
-          { text: '\n\n' + it.datetime.toLocaleString(), color: '#000', background: '#ddd', font: 'FiraCode', fontSize: 10 },
-          { text: itemType, color: '#333', italics: true },
+          { text: '\n\n' + it.datetime.toLocaleString(), color: '#000', background: '#fff', font: 'FiraCode', fontSize: 10 },
           ...bodyLines,
+          {
+            canvas: [{
+              type: 'line',
+              x1: 0, y1: 20,
+              x2: A4Width - 2 * 40, y2: 20,
+              lineWidth: 1,
+              lineColor: '#ccc',
+            }]
+          }
         ];
 
         return lines;
