@@ -110,7 +110,9 @@ export async function shareAsPDF(db: Database, profile: Profile, selectedTags: s
   // Apply selection
   // This is only based on tags for now but will later become
   // checkbox based selection
-  items = items.filter(it => it.tags.some((tag: string) => selectedTags.includes(tag)));
+  if (selectedTags.length > 0) {
+    items = items.filter(it => it.tags.some((tag: string) => selectedTags.includes(tag)));
+  }
 
   items.sort((a, b) => a.datetime < b.datetime);
 
