@@ -5,8 +5,64 @@ import { archiveProfile } from './fs';
 import saveAs from 'file-saver';
 import pdfMake from 'pdfmake/build/pdfmake';
 import { loadAsset } from './ops';
-import pdfToImages from 'pdf-to-images-browser';
+import * as pdfjsLib from 'pdfjs-dist';
 
+async function pdfToImages(pdfFile: File): Promise<[string]> {
+  const workerSrc = '/pdf.worker.min.mjs';
+  let images = [];
+  const fileReader = new FileReader();
+
+  return new Promise((resolve, reject) => {
+    fileReader.onload = async function() {
+      const typedarray = new Uint8Array(this.result);
+
+      try {
+        if (typeof pdfjsLib !== 'undefined' && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
+          const pdfJsVersion = pdfjsLib.version;
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+        } else if (typeof pdfjsLib === 'undefined') {
+          console.error('pdf.js is not loaded');
+          reject(null);
+          return;
+        }
+
+
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+        const numPages = pdf.numPages;
+
+        for (let i = 1; i <= numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 2.0 });
+
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          const renderContext = {
+            canvasContext: context,
+            viewport: viewport
+          }
+
+          await page.render(renderContext).promise;
+          const dataUrl = canvas.toDataURL('image/png');
+          images.push(dataUrl);
+        }
+        resolve(images);
+      } catch (error) {
+        console.error('Error converting PDF to images:', error);
+        reject(null);
+      }
+    }
+
+    fileReader.onerror = (error) => {
+      console.error('Error reading PDF file for image conversion:', error);
+      reject(null);
+    }
+
+    fileReader.readAsArrayBuffer(pdfFile);
+  });
+}
 
 // Convert attached file in asset to images and return their base64 data urls
 async function assetToImages(db: Database, parentId: string, asset: Asset): Promise<null | [string]> {
@@ -21,9 +77,7 @@ async function assetToImages(db: Database, parentId: string, asset: Asset): Prom
         reader.readAsDataURL(data);
       });
     } else if (data.type.match('application/pdf')) {
-      let images = await pdfToImages(data, { format: 'png', output: 'base64' });
-      console.log(images);
-      return images;
+      return await pdfToImages(data);
     } else {
       console.error(`Unknown mimetype for embedding in a pdf: ${data.type}`);
       return null;
