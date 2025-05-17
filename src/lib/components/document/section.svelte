@@ -50,11 +50,11 @@
   </button>
 </div>
 
-<div class="text-sm text-gray-500 italic">
+<div class="text-sm text-gray-500 italic mb-5">
   {#if filteredDocuments.length < documents.length}
-    Showing { filteredDocuments.length } of total { documents.length } documents
+    Showing { filteredDocuments.length } of total { documents.length } {#if documents.length === 1}document{:else}documents{/if}
   {:else}
-    Showing all documents
+    Showing {#if documents.length === 1} the only document{:else}all { documents.length } documents{/if}
   {/if}
 </div>
 

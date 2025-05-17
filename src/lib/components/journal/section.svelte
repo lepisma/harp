@@ -62,11 +62,11 @@
     <IconPlus size={18} />
 </div>
 
-<div class="text-sm text-gray-500 italic">
+<div class="text-sm text-gray-500 italic mb-5">
   {#if filteredEntries.length < entries.length}
-    Showing { filteredEntries.length } of total { entries.length } entries
+    Showing { filteredEntries.length } of total { entries.length } {#if entries.length === 1}entry{:else}entries{/if}
   {:else}
-    Showing all entries
+    Showing {#if entries.length === 1} the only entry{:else}all { entries.length } entries{/if}
   {/if}
 </div>
 

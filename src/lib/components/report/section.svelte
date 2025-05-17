@@ -49,11 +49,11 @@
   </button>
 </div>
 
-<div class="text-sm text-gray-500 italic">
+<div class="text-sm text-gray-500 italic mb-5">
   {#if filteredReports.length < reports.length}
-    Showing { filteredReports.length } of total { reports.length } reports
+    Showing { filteredReports.length } of total { reports.length } {#if reports.length === 1}report{:else}reports{/if}
   {:else}
-    Showing all reports
+    Showing {#if reports.length === 1} the only report{:else}all { reports.length } reports{/if}
   {/if}
 </div>
 

@@ -49,11 +49,11 @@
   </button>
 </div>
 
-<div class="text-sm text-gray-500 italic">
+<div class="text-sm text-gray-500 italic mb-5">
   {#if filteredMetrics.length < metrics.length}
-    Showing { filteredMetrics.length } of total { metrics.length } metrics
+    Showing { filteredMetrics.length } of total { metrics.length } {#if metrics.length === 1}metric{:else}metrics{/if}
   {:else}
-    Showing all metrics
+    Showing {#if metrics.length === 1} the only metric{:else}all { metrics.length } metrics{/if}
   {/if}
 </div>
 
