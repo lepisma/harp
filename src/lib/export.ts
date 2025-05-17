@@ -7,7 +7,10 @@ import pdfMake from 'pdfmake/build/pdfmake';
 import { loadAsset } from './ops';
 import * as pdfjsLib from 'pdfjs-dist';
 
-async function pdfToImages(pdfFile: File): Promise<[string]> {
+/*
+ * Convert a pdf file to an array of images using pdf.js
+ */
+async function pdfToImages(pdfFile: File): Promise<string[]> {
   const workerSrc = '/pdf.worker.min.mjs';
   let images = [];
   const fileReader = new FileReader();
@@ -36,6 +39,13 @@ async function pdfToImages(pdfFile: File): Promise<[string]> {
 
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
+
+          if (context === null) {
+            console.error('Unable to get canvas context while converting PDF to images');
+            reject(null);
+            return;
+          }
+
           canvas.height = viewport.height;
           canvas.width = viewport.width;
 
@@ -132,8 +142,8 @@ export async function shareAsPDF(db: Database, profile: Profile, selectedTags: s
         // This is document
         itemType = 'Document';
       }
-      bodyLines.push({ text: `${itemType} from ${it.source.id}`, color: '#333', italics: true }),
-        bodyLines.push({ text: it.name, fontSize: 18 });
+      bodyLines.push({ text: `${itemType} from ${it.source.id}`, color: '#333', italics: true });
+      bodyLines.push({ text: it.name, fontSize: 18 });
 
       bodyLines.push('\nAttachments:');
       let lis = [];
