@@ -1,10 +1,9 @@
 <script lang="ts">
   import type { Asset, Document } from '$lib/types';
   import IconPlus from '@lucide/svelte/icons/plus';
-  import IconCheck from '@lucide/svelte/icons/check';
-  import IconSquareMinus from '@lucide/svelte/icons/square-minus';
   import DocumentForm from '$lib/components/document-form.svelte';
   import DocumentCard from '$lib/components/document-card.svelte';
+  import SelectAllInput from '$lib/components/select-all-input.svelte';
 
   interface Props {
     documents: Document[];
@@ -108,33 +107,16 @@
   {/if}
 </div>
 
-<div class="text-sm mb-5 flex gap-2">
-  <label class="relative flex items-center cursor-pointer select-none">
-    <input
-      type="checkbox"
-      onchange={ handleSelectAll }
-      checked={ allFilteredSelected }
-      indeterminate={ someFilteredSelected }
-      class="sr-only peer"
-      />
-    <span class="rounded-md border-2 w-5 h-5 flex items-center justify-center
-		 border-gray-300 dark:border-gray-600
-		 text-transparent peer-checked:text-white dark:text-transparent dark:peer-checked:text-white
-		 peer-checked:bg-blue-500 dark:peer-checked:bg-blue-600
-		 peer-checked:border-blue-500 dark:peer-checked:border-blue-600
-		 peer-indeterminate:bg-blue-500 dark:peer-indeterminate:bg-blue-600
-		 peer-indeterminate:border-blue-500 dark:peer-indeterminate:border-blue-600
-		 peer-indeterminate:text-white dark:peer-indeterminate:text-white
-		 transition-colors duration-150 ease-in-out">
-      {#if allFilteredSelected}
-	<IconCheck size={18} />
-      {:else if someFilteredSelected}
-	<IconSquareMinus size={18} />
-      {:else}
-	<IconCheck size={18} class="text-transparent" />
-      {/if}
-    </label>
-  <span>Selected { selectedDocs.length } {#if selectedDocs.length === 1} entry{:else} entries{/if} {#if nHiddenSelection > 0 } ({ nHiddenSelection } hidden) {/if}</span>
+<div class="mb-5">
+  <SelectAllInput
+    allFilteredSelected={ allFilteredSelected }
+    someFilteredSelected={ someFilteredSelected }
+    nSelection={ selectedDocs.length }
+    nHiddenSelection={ nHiddenSelection }
+    entityName="document"
+    entityNamePlural="documents"
+    handleSelectAll={ handleSelectAll }
+    />
 </div>
 
 {#if isDocumentFormOpen}
