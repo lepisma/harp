@@ -84,27 +84,20 @@
     const allFilteredAreSelected = filteredUUIDs.length > 0 && filteredUUIDs.every(uuid => selectedUUIDs.includes(uuid));
 
     if (allFilteredAreSelected) {
-      // If all filtered are selected, unselect *only* those currently filtered entries.
-      // Keep any selected entries that are currently hidden by the filter.
       selectedUUIDs = selectedUUIDs.filter(uuid => !filteredUUIDs.includes(uuid));
     } else {
-      // If not all filtered are selected (or none are), select all filtered entries.
-      // Combine the current selectedUUIDs with the filteredUUIDs, ensuring uniqueness,
-      // and importantly, reassign the variable.
-      const newSelectedSet = new Set(selectedUUIDs); // Start with currently selected (might include hidden)
-      filteredUUIDs.forEach(uuid => newSelectedSet.add(uuid)); // Add all filtered UUIDs
-      selectedUUIDs = Array.from(newSelectedSet); // Convert back to array and REASSIGN
+      const newSelectedSet = new Set(selectedUUIDs);
+      filteredUUIDs.forEach(uuid => newSelectedSet.add(uuid));
+      selectedUUIDs = Array.from(newSelectedSet);
     }
   }
 
   function handleSelection(entry: JournalEntry, isSelected: boolean) {
     if (isSelected) {
-      // Add the UUID to the selectedUUIDs array, using reassignment
-      if (!selectedUUIDs.includes(entry.uuid)) { // Prevent duplicates just in case
+      if (!selectedUUIDs.includes(entry.uuid)) {
 	selectedUUIDs = [...selectedUUIDs, entry.uuid];
       }
     } else {
-      // Remove the UUID from the selectedUUIDs array, using filter (which creates a new array)
       selectedUUIDs = selectedUUIDs.filter(uuid => uuid !== entry.uuid);
     }
   }

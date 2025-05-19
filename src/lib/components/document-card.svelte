@@ -17,10 +17,23 @@
     onEdit: (entity: Entity) => void;
     onAssetUpload: (asset: Asset, parentId: string, data: Blob) => Promise<void>;
     readAsset: (asset: Asset, parentId: string) => Promise<Blob>;
+    checked: boolean;
+    onSelectionChange: (isSelected: boolean) => void;
     enableMetricValues?: boolean;
   };
 
-  let { title, entity, onDelete, onEdit, onAssetUpload, readAsset, enableMetricValues = false }: CardProps = $props();
+  let {
+    title,
+    entity,
+    onDelete,
+    onEdit,
+    onAssetUpload,
+    readAsset,
+    checked,
+    onSelectionChange,
+    enableMetricValues = false
+  }: CardProps = $props();
+
   let content = $derived.by(async () => {
     if (entity.annotation) {
       return await formatOrgToHTML(entity.annotation);
@@ -41,21 +54,26 @@
     onEdit(editedEntity);
     isEditFormOpen = false;
   }
+
+  function handleCardCheckboxChange(event: Event) {
+    const isSelected = (event.target as HTMLInputElement).checked;
+    onSelectionChange(isSelected);
+  }
 </script>
 
 <div class="rounded-md shadow-md py-5 transition-all duration-150 ease-in-out"
-     class:border-blue-500={isSelected}
-     class:ring-2={isSelected}
-     class:ring-blue-300={isSelected}
-     class:shadow-lg={isSelected}
-     class:bg-gray-50={isSelected}
-     class:dark:bg-gray-800={isSelected}
+     class:border-blue-500={ checked }
+     class:ring-2={ checked }
+     class:ring-blue-300={ checked }
+     class:shadow-lg={ checked }
+     class:bg-gray-50={ checked }
+     class:dark:bg-gray-800={ checked }
      >
   <article class="space-y-2">
     <header class="flex items-center justify-between">
       <div class="flex bg-gray-100 dark:bg-gray-800 pl-2">
         <label class="relative flex items-center cursor-pointer select-none">
-          <input type="checkbox" bind:checked={ isSelected } class="sr-only peer" />
+          <input type="checkbox" onchange={ handleCardCheckboxChange } bind:checked={ checked } class="sr-only peer" />
           <span class="rounded-md border-2
                        border-gray-300 dark:border-gray-600
                        text-gray-300 peer-checked:text-white dark:text-gray-600 dark:peer-checked:text-white

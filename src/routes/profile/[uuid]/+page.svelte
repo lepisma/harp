@@ -31,11 +31,19 @@
   let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
 
   let selectedTags: string[] = $state([]);
-  let selectedUUIDs: string[] = $state([]);
+  let selectedEntryUUIDs: string[] = $state([]);
+  let selectedReportUUIDs: string[] = $state([]);
+  let selectedDocumentUUIDs: string[] = $state([]);
+
+  let selectedUUIDs: string[] = $derived.by(() => {
+    let superset = (new Set(selectedEntryUUIDs)).union((new Set(selectedDocumentUUIDs)).union(new Set(selectedReportUUIDs)));
+    return [...superset];
+  })
+
   let selectedTab = $state('journal');
 
   function onTagClick(e: Event, tag: string) {
-    let btn = e.target;
+    let btn = e.target as HTMLButtonElement;
 
     if (btn.classList.contains('selected')) {
       selectedTags = selectedTags.filter(t => t !== tag);
@@ -139,7 +147,7 @@
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
                 selectedTags={ selectedTags }
-                bind:selectedUUIDs={ selectedUUIDs }
+                bind:selectedUUIDs={ selectedEntryUUIDs }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="metrics">
@@ -157,6 +165,7 @@
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
                 selectedTags={ selectedTags }
+                bind:selectedUUIDs={ selectedReportUUIDs }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="documents">
@@ -166,6 +175,7 @@
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
                 selectedTags={ selectedTags }
+                bind:selectedUUIDs={ selectedDocumentUUIDs }
                 />
             </Tabs.Panel>
             {/snippet}
