@@ -97,7 +97,7 @@ async function assetToImages(db: Database, parentId: string, asset: Asset): Prom
   }
 }
 
-export async function shareAsPDF(db: Database, profile: Profile, selectedTags: string[]) {
+export async function shareAsPDF(db: Database, profile: Profile, selectedUUIDs: string[]) {
   const fonts = {
     EtBook: {
       normal: 'https://cdn.jsdelivr.net/npm/typeface-et-book@0.0.2/et-book/et-book/et-book-roman-line-figures/et-book-roman-line-figures.ttf',
@@ -117,11 +117,9 @@ export async function shareAsPDF(db: Database, profile: Profile, selectedTags: s
   items.push(...profile.reports);
   items.push(...profile.documents);
 
-  // Apply selection
-  // This is only based on tags for now but will later become
-  // checkbox based selection
-  if (selectedTags.length > 0) {
-    items = items.filter(it => it.tags.some((tag: string) => selectedTags.includes(tag)));
+  // Apply checkbox selection
+  if (selectedUUIDs.length > 0) {
+    items = items.filter(it => selectedUUIDs.includes(it.uuid));
   }
 
   items.sort((a, b) => a.datetime < b.datetime);

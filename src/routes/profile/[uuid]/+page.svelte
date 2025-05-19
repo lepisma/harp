@@ -31,6 +31,7 @@
   let metricValues: MetricValue[] = $derived(profile !== null ? profileMetricValues(profile) : []);
 
   let selectedTags: string[] = $state([]);
+  let selectedUUIDs: string[] = $state([]);
   let selectedTab = $state('journal');
 
   function onTagClick(e: Event, tag: string) {
@@ -65,7 +66,6 @@
     db = await loadDB();
     profile = await loadProfile(db, profileId);
   });
-
 </script>
 
 {#if profile !== null}
@@ -73,14 +73,14 @@
     <div class="container mx-auto grid grid-cols-1 xl:grid-cols-[200px_minmax(0px,_1fr)_200px]">
       <header class="mt-3">
         <a href="/"><div class="h3 text-gray-400 pt-3 pl-3"><i>harp</i></div></a>
-        <h1 class="h1 p-3">{profile.name}</h1>
+        <h1 class="h1 p-3">{ profile.name }</h1>
       </header>
 
       <main class="col-span-1 p-4">
         <div class="mb-5 flex items-center justify-between gap-2">
           <div>
-            <button type="button" onclick={async () => await shareAsPDF(db, profile, selectedTags)} class="btn btn-sm preset-filled">
-              {#if selectedTags.length > 0}
+            <button type="button" onclick={async () => await shareAsPDF(db, profile, selectedUUIDs)} class="btn btn-sm preset-filled">
+              {#if selectedUUIDs.length > 0}
                 <span>Share selection as PDF</span>
               {:else}
                 <span>Share as PDF</span>
@@ -139,6 +139,7 @@
                 onAssetUpload={ handleAssetUpload }
                 readAsset={ readAsset }
                 selectedTags={ selectedTags }
+                bind:selectedUUIDs={ selectedUUIDs }
                 />
             </Tabs.Panel>
             <Tabs.Panel value="metrics">
