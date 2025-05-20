@@ -57,7 +57,7 @@
   }
 
   async function handleFileUpload() {
-    const data = await uploadFile();
+    const data = await uploadFile('capture=camera,image/*,video/*');
     const asset: Asset = {
       fileName: data.name,
       mimeType: data.type || undefined

@@ -8,10 +8,14 @@ import type { Database } from './db';
  * Programmatically ask user to upload a file using a hidden input element and
  * return the object.
  */
-export async function uploadFile(): Promise<File> {
+export async function uploadFile(acceptString?: string): Promise<File> {
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.style.display = 'none';
+
+  if (acceptString) {
+    fileInput.accept = acceptString;
+  }
 
   return new Promise((resolve, reject) => {
     fileInput.addEventListener('change', async (event) => {
