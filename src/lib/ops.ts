@@ -3,6 +3,7 @@
 import type { Database } from './db';
 import type { Profile, Asset, ProfileSummary } from './types';
 import { v4 as uuidv4 } from 'uuid';
+import { profileMetricValues } from './utils';
 
 function newProfile(name: string): Profile {
   return {
@@ -17,8 +18,7 @@ function newProfile(name: string): Profile {
       entries: []
     }],
     reports: [],
-    documents: [],
-    metricValues: [],
+    documents: []
   }
 }
 
@@ -32,7 +32,7 @@ function summarizeProfile(profile: Profile): ProfileSummary {
       journalEntries: profile.journals.map(j => j.entries.length).reduce((a, b) => a + b, 0),
       reports: profile.reports.length,
       documents: profile.documents.length,
-      metricValues: profile.metricValues.length,
+      metricValues: profileMetricValues(profile).length,
     }
   };
 }
