@@ -1,5 +1,5 @@
 import type { Profile } from './types';
-import { parseTitle, parseOrgId, formatProfile, orgAttachPath } from './org';
+import { formatProfile, parseProfile, orgAttachPath } from './org';
 import JSZip from 'jszip';
 import { loadAsset } from './ops';
 import type { Database } from './db';
@@ -55,17 +55,51 @@ async function readFile(file: File): Promise<string> {
   });
 }
 
-export async function loadLog(profile: Profile): Promise<string> {
-  return readFile(profile.file);
+export async function loadArchive(zipFile: File): Promise<Profile | null> {
+  const files = (await JSZip.loadAsync(zipFile)).files;
+  const indexFile = files['index.org'];
+
+  if (!indexFile) {
+    console.error('Unable to find index.org file');
+    return null;
+  }
+
+  const orgContent = await indexFile.async('text')
+  return await parseProfile(orgContent);
 }
 
-export async function loadProfile(file: File): Promise<Profile> {
-  let content = await readFile(file);
-  return {
-    uuid: parseOrgId(content),
-    name: parseTitle(content),
-    file: file,
-  };
+export function parseMimeType(fileName: string): string | null {
+  const parts = fileName.split('.');
+  if (parts.length < 2) {
+    return null;
+  }
+
+  const extension = parts[parts.length - 1].toLowerCase();
+
+  switch (extension) {
+    case 'jpeg':
+    case 'jpg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'gif':
+      return 'image/gif';
+    case 'bmp':
+      return 'image/bmp';
+    case 'webp':
+      return 'image/webp';
+    case 'tiff':
+    case 'tif':
+      return 'image/tiff';
+    case 'svg':
+      return 'image/svg+xml';
+
+    case 'pdf':
+      return 'application/pdf';
+
+    default:
+      return null;
+  }
 }
 
 /*

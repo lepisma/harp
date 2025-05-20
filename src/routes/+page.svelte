@@ -9,13 +9,14 @@
   import IconUpload from '@lucide/svelte/icons/upload';
   import { goto } from '$app/navigation';
   import type { ProfileSummary } from '$lib/types';
+  import { loadArchive, uploadFile } from '$lib/fs';
 
   let db: Database | null = $state(null);
   let profileSummaries: ProfileSummary[] = $state([]);
 
   let profileName: string = $state('');
 
-  async function onNew() {
+  async function handleNew() {
     if (profileName === '') {
       alert('Please input name of the new profile!');
     } else {
@@ -24,18 +25,28 @@
     }
   }
 
-  async function onDelete(profileId: string) {
+  async function handleDelete(profileId: string) {
     if (window.confirm('Do you really want to delete this profile?')) {
       await deleteProfile(db, profileId);
       profileSummaries = profileSummaries.filter(ps => ps.uuid !== profileId);
     }
   }
 
-  async function onDeleteAll() {
+  async function handleDeleteAll() {
     if (window.confirm('This is a development only feature! Do you really want to reset all data?')) {
       if (window.confirm('Are you sure?')) {
         await eraseDB();
       }
+    }
+  }
+
+  async function handleImport() {
+    const zipFile = await uploadFile('.zip');
+    const profile = await loadArchive(zipFile);
+
+    if (!profile) {
+      console.error('Error in loading profile from file');
+      return;
     }
   }
 
@@ -51,11 +62,11 @@
     <header class="col-span-1 mt-3 flex items-center gap-5 xl:flex-col xl:items-start">
       <h1 class="h1 p-3"><i>harp</i></h1>
       <div class="flex items-center gap-2">
-        <button onclick={onDeleteAll} class="btn btn-sm preset-tonal-error">
+        <button onclick={ handleDeleteAll } class="btn btn-sm preset-tonal-error">
           <span>Clear DB</span>
           <IconTrash2 size={14} />
         </button>
-        <button type="button" disabled class="btn btn-sm preset-outlined">
+        <button type="button" onclick={ handleImport } class="btn btn-sm preset-outlined">
           <span>Import</span>
           <IconUpload size={14} />
         </button>
@@ -65,15 +76,15 @@
     <main class="col-span-1 p-4 mt-3">
       <div class="w-full grid grid-cols-2 gap-4 mb-5">
         {#each profileSummaries as summary}
-          <a href={`/profile/${summary.uuid}`}>
+          <a href={ `/profile/${summary.uuid}` }>
             <div class="flex justify-between card p-4 items-center preset-tonal-primary grid-cols-[1fr_auto]">
               <span class="flex gap-3">
-                <IconUser /> {summary.name}
+                <IconUser /> { summary.name }
               </span>
               <button
                 onclick={async (event) => {
                   event.preventDefault();
-                  await onDelete(summary.uuid);
+                  await handleDelete(summary.uuid);
                 }}
                 class="ig-btn preset-tonal-surface rounded-md"
                 >
@@ -85,8 +96,8 @@
       </div>
 
       <div class="input-group card p-2 preset-outlined-primary-500 flex">
-        <input class="ig-input" bind:value={profileName} type="text" placeholder="Profile Name..." />
-        <button onclick={onNew} class="ig-btn preset-filled rounded-lg">
+        <input class="ig-input" bind:value={ profileName } type="text" placeholder="Profile Name..." />
+        <button onclick={ handleNew } class="ig-btn preset-filled rounded-lg">
           <IconSquarePlus size={16} /> Create
         </button>
       </div>

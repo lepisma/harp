@@ -1,11 +1,12 @@
 // Org parsing and formatting functions
 
-import type { Asset, Document, Journal, Metadata, MetricValue, Profile, Report } from "./types";
+import type { Asset, Document, Journal, JournalEntry, Metadata, Metric, MetricValue, Profile, Report } from "./types";
 import { unified } from 'unified';
 import parse from 'uniorg-parse';
 import uniorg2rehype from 'uniorg-rehype';
 import stringify from 'rehype-stringify';
-import type { Keyword, OrgData } from 'uniorg';
+import type { Headline, Keyword, OrgData, PropertyDrawer, Section, Text } from 'uniorg';
+import { parseMimeType } from "./fs";
 
 interface OrgNode {
   id?: string;
@@ -15,6 +16,21 @@ interface OrgNode {
   tags: string[];
   props: object;
   content: string;
+}
+
+/*
+ * Convert a property drawer from org tree to a simple js record
+ */
+function drawerRecord(drawerElem: PropertyDrawer): Record<string, string> {
+  const record: Record<string, string> = {};
+
+  for (const child of drawerElem.children) {
+    if (child.type === 'node-property') {
+      record[child.key.toUpperCase()] = child.value.trim();
+    }
+  }
+
+  return record;
 }
 
 /*
@@ -38,9 +54,7 @@ function parseOrgId(data: OrgData): string | null {
   const drawerElem = data.children.find(child => child.type === 'property-drawer');
 
   if (drawerElem) {
-    const idElem = drawerElem.children.find(child => child.type === 'node-property' && child.key.toUpperCase() === 'ID');
-
-    return idElem ? idElem.value.trim() : null;
+    return drawerRecord(drawerElem)['ID'] || null;
   } else {
     return null;
   }
@@ -107,6 +121,28 @@ function formatTags(tags: string[]): string {
   } else {
     return '';
   }
+}
+
+/*
+ * Parse org datetime stamps. This works as the inverse of `formatDatetimeForOrg`.
+ */
+function parseDatetimeFromOrg(text: string): Date | null {
+  const match = text.match(/^\[(\d{4})-(\d{2})-(\d{2})(?: (\d{2}):(\d{2}))?\]$/);
+
+  if (!match) {
+    console.error(`Invalid Org datetime format: ${text}`);
+    return null;
+  }
+
+  const year = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10) - 1; // Month is 0-indexed in Date
+  const day = parseInt(match[3], 10);
+
+  // Check if time components exist
+  const hours = match[4] ? parseInt(match[4], 10) : 0;
+  const minutes = match[5] ? parseInt(match[5], 10) : 0;
+
+  return new Date(year, month, day, hours, minutes);
 }
 
 /*
@@ -315,30 +351,324 @@ ${reports}
 ${documents}`;
 }
 
-function parseMetadata(content: string): Metadata {
+function findNamedSection(orgData: OrgData, name: string): Section | null {
+  const sectionElem = orgData.children.find(child => child.type === 'section'
+    && child.children[0].type === 'headline'
+    && headlineText(child.children[0]) === name);
+
+  if (!sectionElem) {
+    return null;
+  }
+
+  return sectionElem as Section;
+}
+
+/*
+ * Return assets present in form of org links in the body text
+ */
+function parseAssetsFromText(text: string): Asset[] {
+  const assets: Asset[] = [];
+  const assetRegex = /\[\[attachment:([^\]]+)\]\[\1\]\]/g;
+
+  let match: RegExpExecArray | null;
+
+  while ((match = assetRegex.exec(text)) !== null) {
+    const fileName = match[1];
+    const mimeType = parseMimeType(fileName);
+
+    if (mimeType) {
+      assets.push({ fileName, mimeType });
+    } else {
+      assets.push({ fileName });
+    }
+  }
+
+  return assets;
+}
+
+function parseMetrics(orgData: OrgData): Metric[] {
+  const metaSectionElem = findNamedSection(orgData, 'Metadata');
+  if (!metaSectionElem) {
+    console.error('No metadata section found:', orgData);
+    return [];
+  }
+
+  const sectionElem = findNamedSection(metaSectionElem as unknown as OrgData, 'Metrics');
+  if (!sectionElem) {
+    console.error('No metrics section found:', metaSectionElem);
+    return [];
+  }
+
+  const metrics: Metric[] = [];
+  const metricElems = sectionElem.children.filter(child => child.type === 'section');
+
+  for (const metricElem of metricElems) {
+    const headElem = metricElem.children.find(child => child.type === 'headline');
+    if (!headElem) {
+      console.error('Error in parsing heading:', metricElem);
+      continue;
+    }
+
+    const name = headlineText(headElem);
+    const tags = headElem.tags;
+
+    const props = sectionProps(metricElem);
+    let parsingIssue = false;
+    for (const propName of ['UNIT', 'TAG_ID', 'RANGE', 'HEALTHY_RANGE']) {
+      if (!props[propName]) {
+        console.error(`Unable to find ${propName}:`, metricElem);
+        parsingIssue = true;
+        break;
+      }
+    }
+    if (parsingIssue) {
+      continue;
+    }
+
+    const metric: Metric = {
+      name,
+      id: props['TAG_ID'],
+      unit: props['UNIT'],
+      tags,
+      range: parseNumberRange(props['RANGE']),
+      healthyRange: parseNumberRange(props['HEALTHY_RANGE']),
+    }
+
+    metrics.push(metric);
+  }
+
+  return metrics;
+}
+
+function parseNumberRange(text: string): [number | undefined, number | undefined] {
+  const regex = /^\s*(-?\d+(\.\d+)?|null)\s*-\s*(-?\d+(\.\d+)?|null)\s*$/i;
+  const match = text.match(regex);
+
+  if (!match) {
+    return [undefined, undefined];
+  }
+
+  const rawStart = match[1];
+  const rawEnd = match[3];
+
+  let start: number | undefined;
+  let end: number | undefined;
+
+  if (rawStart.toLowerCase() === 'null') {
+    start = undefined;
+  } else {
+    start = parseFloat(rawStart);
+    if (isNaN(start)) {
+      start = undefined;
+    }
+  }
+
+  if (rawEnd.toLowerCase() === 'null') {
+    end = undefined;
+  } else {
+    end = parseFloat(rawEnd);
+    if (isNaN(end)) {
+      end = undefined;
+    }
+  }
+
+  return [start, end];
+}
+
+function parseJournalEntry(sectionElem: Section): JournalEntry | null {
+  const text = sectionBody(sectionElem);
+  if (!text) {
+    console.error('Unable to find body text for journal entry:', sectionElem);
+    return null;
+  }
+
+  const props = sectionProps(sectionElem);
+  let parsingIssue = false;
+  for (const propName of ['ID', 'DATETIME', 'PRIVATE']) {
+    if (!props[propName]) {
+      console.error(`Unable to find ${propName}:`, sectionElem);
+      parsingIssue = true;
+      break;
+    }
+  }
+  if (parsingIssue) {
+    return null;
+  }
+
+  const datetime = parseDatetimeFromOrg(props['DATETIME']);
+  if (!datetime) {
+    console.error('Error in parsing datetime value');
+    return null;
+  }
+
   return {
-    sources: [],
-    metrics: []
+    datetime,
+    uuid: props['ID'],
+    tags: sectionTags(sectionElem).filter(tag => tag !== 'ATTACH'),
+    text,
+    metricValues: parseMetricValues(text, datetime, props['ID']),
+    assets: parseAssetsFromText(text),
+    isPrivate: props['PRIVATE'] === 't'
   };
 }
 
-function parseJournals(content: string): Journal[] {
-  return [];
+function parseJournals(orgData: OrgData): Journal[] {
+  const sectionElem = findNamedSection(orgData, 'Journals');
+
+  if (!sectionElem) {
+    console.error('Error in finding Journals section in orgData:', orgData);
+    return [];
+  }
+
+  // As of now, we only allow working with one journal called 'Main'
+  const journalSection = findNamedSection(sectionElem as unknown as OrgData, 'Main');
+
+  if (!journalSection) {
+    console.error('Cannot find the Main journal');
+    return [];
+  }
+
+  const entries: JournalEntry[] = journalSection.children.filter(child => child.type === 'section')
+    .map(child => parseJournalEntry(child))
+    .filter(it => it !== null);
+
+  return [{
+    name: 'Main',
+    entries: entries
+  }];
 }
 
-function parseReports(content: string): Report[] {
-  return [];
+function sectionProps(sectionElem: Section): Record<string, string> {
+  const drawerElem = sectionElem.children.find(child => child.type === 'property-drawer');
+  if (!drawerElem) {
+    console.error('Unable to find property drawer:', sectionElem);
+    return {};
+  }
+
+  return drawerRecord(drawerElem);
 }
 
-function parseDocuments(content: string): Document[] {
-  return [];
+function sectionTags(sectionElem: Section): string[] {
+  const headElem = sectionElem.children.find(child => child.type === 'headline');
+  if (!headElem) {
+    console.error('Found a section without headline:', sectionElem);
+    return [];
+  }
+
+  return headElem.tags;
+}
+
+/*
+ * Return body text for the headlined section
+ */
+function sectionBody(sectionElem: Section): string | null {
+  const bodyElems = sectionElem.children.filter(child => child.type === 'paragraph');
+  if (bodyElems.length > 0) {
+    const paragraphTexts = bodyElems.map(be => be.children.filter(child => child.type === 'text').map(child => child.value).join());
+    const bodyText = paragraphTexts.join('\n\n').trim();
+
+    return bodyText !== '' ? bodyText : null;
+  } else {
+    return null;
+  }
+}
+
+function headlineText(headlineElem: Headline): string {
+  return (headlineElem.children[0] as Text).value.trim();
+}
+
+function parseReportsOrDocuments(orgData: OrgData, isReport: boolean): (Report | Document)[] {
+  const sectionElem =  findNamedSection(orgData, (isReport ? 'Reports' : 'Documents'));
+
+  if (!sectionElem) {
+    console.error('Error in parsing section from orgData:', orgData);
+    return [];
+  }
+
+  const entityElems = (sectionElem as Section).children.filter(child => child.type === 'section');
+
+  const entities: (Report | Document)[] = [];
+  for (const entityElem of entityElems) {
+    const headElem = entityElem.children.find(child => child.type === 'headline');
+    if (!headElem) {
+      console.error('Error in parsing heading:', entityElem);
+      continue;
+    }
+
+    const name = headlineText(headElem);
+    // ATTACH tag is just to tell org mode that there are attachments. We anyway
+    // keep attachment names in FILES prop.
+    const tags = headElem.tags.filter(tag => tag !== 'ATTACH');
+
+    const props = sectionProps(entityElem);
+    let parsingIssue = false;
+    for (const propName of ['SOURCE', 'ID', 'FILES', 'DATETIME']) {
+      if (!props[propName]) {
+        console.error(`Unable to find ${propName}:`, entityElem);
+        parsingIssue = true;
+        break;
+      }
+    }
+    if (parsingIssue) {
+      continue;
+    }
+
+    // Parse assets
+    const assets: Asset[] = props['FILES'].split(',').map(text => text.trim()).map(fileName => {
+      const asset: Asset = { fileName };
+      const mimeType = parseMimeType(fileName);
+      if (mimeType) {
+        asset['mimeType'] = mimeType;
+      }
+      return asset;
+    });
+
+    const datetime = parseDatetimeFromOrg(props['DATETIME']);
+    if (!datetime) {
+      console.error('Error in parsing datetime value');
+      continue;
+    }
+
+    // NOTE: We might have to be careful here since there could be many other
+    // items here too beyond paragraphs.
+    const annotation = sectionBody(entityElem) || '';
+
+    const entity: Report | Document = {
+      name,
+      datetime,
+      uuid: props['ID'],
+      tags,
+      source: {
+        id: props['SOURCE'],
+        description: '' // We just use ID as of now
+      },
+      assets,
+      annotation
+    };
+
+    if (isReport) {
+      (entity as Report)['metricValues'] = parseMetricValues(annotation, datetime, props['ID']);
+    }
+
+    entities.push(entity);
+  }
+
+  return entities;
+}
+
+function parseReports(orgData: OrgData): Report[] {
+  return parseReportsOrDocuments(orgData, true) as Report[];
+}
+
+function parseDocuments(orgData: OrgData): Document[] {
+  return parseReportsOrDocuments(orgData, false);
 }
 
 export async function parseProfile(content: string): Promise<Profile | null> {
   const processor = unified().use(parse);
   const orgData = processor.parse(content);
 
-  let uuid = parseOrgId(content);
+  let uuid = parseOrgId(orgData);
   if (uuid === null) {
     console.error('Unable to parse uuid for profile');
     return null;
@@ -350,12 +680,25 @@ export async function parseProfile(content: string): Promise<Profile | null> {
     return null;
   }
 
-  return {
+  const reports = parseReports(orgData);
+  const documents = parseDocuments(orgData);
+
+  const sources = Array.from(new Set([...documents.map(doc => doc.source.id), ...reports.map(rep => rep.source.id)]))
+    .map(s => { return { id: s, description: '' }; });
+
+  const metadata = {
+    sources,
+    metrics: parseMetrics(orgData),
+  };
+
+  const profile = {
     uuid,
     name,
-    metadata: parseMetadata(content),
-    journals: parseJournals(content),
-    reports: parseReports(content),
-    documents: parseDocuments(content),
+    metadata,
+    journals: parseJournals(orgData),
+    reports,
+    documents,
   };
+
+  return profile;
 }
