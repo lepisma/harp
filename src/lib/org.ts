@@ -5,6 +5,7 @@ import { unified } from 'unified';
 import parse from 'uniorg-parse';
 import uniorg2rehype from 'uniorg-rehype';
 import stringify from 'rehype-stringify';
+import type { Keyword, OrgData } from 'uniorg';
 
 interface OrgNode {
   id?: string;
@@ -23,20 +24,26 @@ export function orgAttachPath(asset: Asset, parentId: string): string {
   return `data/${parentId.substring(0, 2)}/${parentId.substring(2)}/${asset.fileName}`;
 }
 
-export function parseTitle(orgString: string): string | null {
-  const titleMatch = orgString.match(/^#\+TITLE:\s*(.*)$/mi);
-  if (titleMatch && titleMatch[1]) {
-    return titleMatch[1].trim();
+function parseTitle(data: OrgData): string | null {
+  const titleElem = data.children.find(child => child.type === 'keyword' && child.key.toUpperCase() === 'TITLE');
+
+  if (titleElem) {
+    return (titleElem as Keyword).value.trim();
+  } else {
+    return null;
   }
-  return null;
 }
 
-export function parseOrgId(orgString: string): string | null {
-  const idMatch = orgString.match(/^:ID:\s*(.*)$/m);
-  if (idMatch && idMatch[1]) {
-    return idMatch[1].trim();
+function parseOrgId(data: OrgData): string | null {
+  const drawerElem = data.children.find(child => child.type === 'property-drawer');
+
+  if (drawerElem) {
+    const idElem = drawerElem.children.find(child => child.type === 'node-property' && child.key.toUpperCase() === 'ID');
+
+    return idElem ? idElem.value.trim() : null;
+  } else {
+    return null;
   }
-  return null;
 }
 
 // Parse fragments like #tag or #metric(value) from body strings.  In case of
@@ -306,4 +313,49 @@ ${journals}
 ${reports}
 
 ${documents}`;
+}
+
+function parseMetadata(content: string): Metadata {
+  return {
+    sources: [],
+    metrics: []
+  };
+}
+
+function parseJournals(content: string): Journal[] {
+  return [];
+}
+
+function parseReports(content: string): Report[] {
+  return [];
+}
+
+function parseDocuments(content: string): Document[] {
+  return [];
+}
+
+export async function parseProfile(content: string): Promise<Profile | null> {
+  const processor = unified().use(parse);
+  const orgData = processor.parse(content);
+
+  let uuid = parseOrgId(content);
+  if (uuid === null) {
+    console.error('Unable to parse uuid for profile');
+    return null;
+  }
+
+  let name = parseTitle(orgData);
+  if (name === null) {
+    console.error('Unable to parse name for profile');
+    return null;
+  }
+
+  return {
+    uuid,
+    name,
+    metadata: parseMetadata(content),
+    journals: parseJournals(content),
+    reports: parseReports(content),
+    documents: parseDocuments(content),
+  };
 }
