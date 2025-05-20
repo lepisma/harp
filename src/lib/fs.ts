@@ -4,6 +4,33 @@ import JSZip from 'jszip';
 import { loadAsset } from './ops';
 import type { Database } from './db';
 
+/*
+ * Programmatically ask user to upload a file using a hidden input element and
+ * return the object.
+ */
+export async function uploadFile(): Promise<File> {
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.style.display = 'none';
+
+  return new Promise((resolve, reject) => {
+    fileInput.addEventListener('change', async (event) => {
+      document.body.removeChild(fileInput);
+      const files = (event.target as HTMLInputElement).files;
+
+      if (files && files.length > 0) {
+        resolve(files[0]);
+      } else {
+        console.error('Some error in file upload');
+        reject();
+      }
+    });
+
+    document.body.appendChild(fileInput);
+    fileInput.click();
+  });
+}
+
 async function readFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

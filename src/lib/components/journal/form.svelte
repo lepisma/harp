@@ -8,6 +8,7 @@
   import IconVideo from '@lucide/svelte/icons/video';
   import IconPaperclip from '@lucide/svelte/icons/paperclip';
   import IconX from '@lucide/svelte/icons/x';
+  import { uploadFile } from '$lib/fs';
 
   interface FormProps {
     title?: string;
@@ -36,7 +37,7 @@
   }
 
   function handleInput(e: Event) {
-    let text = e.target?.value;
+    let text = (e.target as HTMLInputElement)?.value;
     tags = parseTags(text);
     metricValues = parseMetricValues(text, datetime, uuid);
   }
@@ -56,41 +57,26 @@
   }
 
   async function handleFileUpload() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.style.display = 'none';
+    const data = await uploadFile();
+    const asset: Asset = {
+      fileName: data.name,
+      mimeType: data.type || undefined
+    };
 
-    fileInput.addEventListener('change', async (event) => {
-      document.body.removeChild(fileInput);
-      const files = (event.target as HTMLInputElement).files;
+    let textarea = document.getElementById('text') as HTMLTextAreaElement;
 
-      if (files && files.length > 0) {
-        const selectedFile = files[0];
-        const asset: Asset = {
-          fileName: selectedFile.name,
-          mimeType: selectedFile.type || undefined
-        };
-        const data: Blob = selectedFile;
+    // Try to insert at cursor, or just at the end
+    const insertAt = textarea?.selectionEnd;
+    const insertText = `[[attachment:${asset.fileName}][${asset.fileName}]]`
+    if (insertAt) {
+      text = text.substring(0, insertAt) + insertText + text.substring(insertAt);
+    } else {
+      text += insertText;
+    }
 
-        let textarea = document.getElementById('text');
+    assets.push(asset);
 
-        // Try to insert at cursor, or just at the end
-        const insertAt = textarea?.selectionEnd;
-        const insertText = `[[attachment:${asset.fileName}][${asset.fileName}]]`
-        if (insertAt) {
-          text = text.substring(0, insertAt) + insertText + text.substring(insertAt);
-        } else {
-          text += insertText;
-        }
-
-        assets.push(asset);
-
-        await onAssetUpload(asset, uuid, data);
-      };
-    });
-
-    document.body.appendChild(fileInput);
-    fileInput.click();
+    await onAssetUpload(asset, uuid, data);
   }
 </script>
 
