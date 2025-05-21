@@ -75,6 +75,7 @@
         }
 
         await saveProfile(db!, profile);
+        window.alert('Profile successfully imported, please refresh the page');
       } else {
         window.alert('Aborting import');
       }
@@ -88,6 +89,7 @@
       }
 
       await saveProfile(db!, profile);
+      window.alert('Profile successfully imported, please refresh the page');
     }
   }
 
