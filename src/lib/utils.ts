@@ -1,4 +1,4 @@
-import type { MetricValue, Profile } from './types';
+import type { Asset, MetricValue, Profile } from './types';
 
 /*
  * Collect all metric values from the profile
@@ -17,6 +17,29 @@ export function profileMetricValues(profile: Profile): MetricValue[] {
   }
 
   return metricValues;
+}
+
+/*
+ * Collect and return all assets present in the profile along with the
+   corresponding parent IDs
+ */
+export function profileParentAssetPairs(profile: Profile): [string, Asset][] {
+  const output: [string, Asset][] = [];
+
+  for (const journal of profile.journals) {
+    for (const entry of journal.entries) {
+      output.push(...entry.assets.map(asset => [entry.uuid, asset] as [string, Asset]));
+    }
+  }
+
+  for (const report of profile.reports) {
+    output.push(...report.assets.map(asset => [report.uuid, asset] as [string, Asset]));
+  }
+
+  for (const doc of profile.documents) {
+    output.push(...doc.assets.map(asset => [doc.uuid, asset] as [string, Asset]));
+  }
+  return output;
 }
 
 export function formatDatetime(dt: Date): string {

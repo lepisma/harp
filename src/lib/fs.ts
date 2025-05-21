@@ -1,4 +1,4 @@
-import type { Profile } from './types';
+import type { Asset, Profile } from './types';
 import { formatProfile, parseProfile, orgAttachPath } from './org';
 import JSZip from 'jszip';
 import { loadAsset } from './ops';
@@ -66,6 +66,19 @@ export async function loadArchive(zipFile: File): Promise<Profile | null> {
 
   const orgContent = await indexFile.async('text')
   return await parseProfile(orgContent);
+}
+
+export async function loadAssetDataFromZip(zipFile: File, parentId: string, asset: Asset): Promise<Blob | null> {
+  const files = (await JSZip.loadAsync(zipFile)).files;
+  const filePath = `data/${parentId.substring(0, 2)}/${parentId.substring(2)}/${asset.fileName}`;
+
+  const dataFile = files[filePath];
+  if (!dataFile) {
+    console.error(`Unable to load file ${filePath} from zip`);
+    return null;
+  } else {
+    return await dataFile.async('blob');
+  }
 }
 
 export function parseMimeType(fileName: string): string | null {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { eraseDB, loadDB, type Database } from '$lib/db';
-  import { createNewProfile, loadProfileSummaries, deleteProfile } from '$lib/ops';
+  import { createNewProfile, loadProfileSummaries, deleteProfile, isAssetInDB, saveAsset, saveProfile } from '$lib/ops';
   import { onMount } from 'svelte';
   import IconSquarePlus from '@lucide/svelte/icons/square-plus';
   import IconUser from '@lucide/svelte/icons/user';
@@ -9,7 +9,8 @@
   import IconUpload from '@lucide/svelte/icons/upload';
   import { goto } from '$app/navigation';
   import type { ProfileSummary } from '$lib/types';
-  import { loadArchive, uploadFile } from '$lib/fs';
+  import { loadArchive, loadAssetDataFromZip, uploadFile } from '$lib/fs';
+  import { profileParentAssetPairs } from '$lib/utils';
 
   let db: Database | null = $state(null);
   let profileSummaries: ProfileSummary[] = $state([]);
@@ -47,6 +48,46 @@
     if (!profile) {
       console.error('Error in loading profile from file');
       return;
+    }
+
+    const assetPairs = profileParentAssetPairs(profile);
+    const presenceFlags = (await Promise.all(assetPairs.map(async ([parentId, asset]) => await isAssetInDB(db!, parentId, asset))));
+    if (presenceFlags.some(it => it)) {
+      // First we check if any asset is conflicting with any existing item
+      const message = `At least one asset already found in database. Aborting import!`;
+      console.error(message);
+      window.alert(message);
+    } else if (profileSummaries.find(ps => ps.uuid === profile.uuid)) {
+      // Then we check if the profile already exists
+      const message = `Profile with id ${profile.uuid} already exists. Aborting import!`
+      console.error(message);
+      window.alert(message);
+    } else if (profileSummaries.find(ps => ps.name === profile.name)) {
+      if (window.confirm(`Profile with name ${profile.name} already exists. Do you still want to import?`)) {
+        // We will continue with the import but the same name would be present
+        // for two (or more) profiles.
+        for (const [parentId, asset] of assetPairs) {
+          const data = await loadAssetDataFromZip(zipFile, parentId, asset);
+          // TODO: Should add an initial validation step here
+          if (data) {
+            await saveAsset(db!, parentId, asset, data);
+          }
+        }
+
+        await saveProfile(db!, profile);
+      } else {
+        window.alert('Aborting import');
+      }
+    } else {
+      // At this point, we can safely make an import
+      for (const [parentId, asset] of assetPairs) {
+        const data = await loadAssetDataFromZip(zipFile, parentId, asset);
+        if (data) {
+          await saveAsset(db!, parentId, asset, data);
+        }
+      }
+
+      await saveProfile(db!, profile);
     }
   }
 

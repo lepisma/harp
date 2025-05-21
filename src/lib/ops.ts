@@ -61,6 +61,12 @@ export async function loadAsset(db: Database, parentId: string, asset: Asset): P
   }
 }
 
+export async function isAssetInDB(db: Database, parentId: string, asset: Asset): Promise<boolean> {
+  const assetId = `${parentId}-${asset.fileName}`;
+  const result = await db.get('assets', assetId);
+  return !!result;
+}
+
 export async function saveAsset(db: Database, parentId: string, asset: Asset, data: Blob) {
   let assetId = `${parentId}-${asset.fileName}`;
   await db.put('assets', { id: assetId, data });
