@@ -21,14 +21,14 @@
     if (profileName === '') {
       alert('Please input name of the new profile!');
     } else {
-      let profile = await createNewProfile(db, profileName);
+      let profile = await createNewProfile(db!, profileName);
       await goto(`/profile/${profile.uuid}`);
     }
   }
 
   async function handleDelete(profileId: string) {
     if (window.confirm('Do you really want to delete this profile?')) {
-      await deleteProfile(db, profileId);
+      await deleteProfile(db!, profileId);
       profileSummaries = profileSummaries.filter(ps => ps.uuid !== profileId);
     }
   }

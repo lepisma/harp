@@ -3,7 +3,7 @@
 import type { Database } from './db';
 import type { Profile, Asset, ProfileSummary } from './types';
 import { v4 as uuidv4 } from 'uuid';
-import { profileMetricValues } from './utils';
+import { profileMetricValues, profileParentAssetPairs } from './utils';
 
 function newProfile(name: string): Profile {
   return {
@@ -43,8 +43,23 @@ export async function createNewProfile(db: Database, profileName: string): Promi
   return profile;
 }
 
+/*
+ * Find all assets linked in the profile and delete them
+ */
+async function deleteProfileAssets(db: Database, profile: Profile) {
+  const assetPairs = profileParentAssetPairs(profile);
+
+  for (const [parentId, asset] of assetPairs) {
+    await deleteAsset(db, parentId, asset);
+  }
+}
+
 export async function deleteProfile(db: Database, profileId: string) {
-  await db.delete('profiles', profileId);
+  const profile = await loadProfile(db, profileId);
+  if (profile) {
+    await deleteProfileAssets(db, profile);
+    await db.delete('profiles', profileId);
+  }
 }
 
 export async function loadProfile(db: Database, profileId: string): Promise<Profile | undefined> {
@@ -70,6 +85,11 @@ export async function isAssetInDB(db: Database, parentId: string, asset: Asset):
 export async function saveAsset(db: Database, parentId: string, asset: Asset, data: Blob) {
   let assetId = `${parentId}-${asset.fileName}`;
   await db.put('assets', { id: assetId, data });
+}
+
+export async function deleteAsset(db: Database, parentId: string, asset: Asset) {
+  let assetId = `${parentId}-${asset.fileName}`;
+  await db.delete('assets', assetId);
 }
 
 export async function loadProfileSummaries(db: Database): Promise<ProfileSummary[]> {
