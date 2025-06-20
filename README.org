@@ -8,9 +8,9 @@ features of this:
    anything.
 2. Search, filter, and share minimal and relevant information with your health
    care provider.
-3. Data stored in plain Org mode files in local file-system. Reports and
-   connected files are kept as org-attachments. This makes it easy to work with
-   the records using Emacs. See ~./assets~ for an example file.
+3. Data stored in plain Org mode files in IndexedDB. Reports and connected files
+   are kept as org-attachments. This makes it easy to work with the records
+   using Emacs. See ~./assets~ for an example file.
 4. No syncing with any cloud store. If needed, the user will have to implement
    syncing in the safest way they deem possible.
 
