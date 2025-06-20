@@ -1,70 +1,26 @@
 #+TITLE: harp
 
-Personal Health Tracker with focus on data privacy.
+Personal Health Record (PHR) application with focus on data privacy. This
+repository keeps a /first-draft/ web version of the application. Here are a few
+features of this:
 
-1. Not linked to any cloud store.
-2. Data stored in plain Org mode files. Reports and connected files are kept as
-   org-attachments.
-3. Track metrics manually or reference a report.
-4. Log journal entries and notes.
+1. Add journal entries, track metrics, save reports and documents, search across
+   anything.
+2. Search, filter, and share minimal and relevant information with your health
+   care provider.
+3. Data stored in plain Org mode files in local file-system. Reports and
+   connected files are kept as org-attachments. This makes it easy to work with
+   the records using Emacs. See ~./assets~ for an example file.
+4. No syncing with any cloud store. If needed, the user will have to implement
+   syncing in the safest way they deem possible.
 
------
+I have stopped working on this version of the application since, except Firefox
+on Linux (and Android?), every browser on every platform is a nightmare if you
+think about storing data persistently forever.
 
-* Tabs
-Everything is tagged.
+The current version is running on [[https://harp-lepisma.netlify.app/]] and I use it
+till I migrate to something else, though there is no documentation, poor
+usability, and a lot of caveats only known to me.
 
-** Metrics
-1. Manual ones come from journal entries
-2. Automatic ones I need to work on since they either come from reports directly
-   or from some other data source.
-
-Actions:
-1. Define new metric
-2. Log new value
-3. Trends
-4. Graphs (reference values maybe too)
-5. Tag metric
-
-** Reports
-1. Scan or document asset
-2. OCRed text data from the above asset
-3. Annotation (not journal entries)
-4. Manual text entry
-
-Properties:
-1. TBD
-2. Source: Hospital, lab, etc.
-
-Actions:
-1. Add new report (file or manual entry)
-2. Run OCR
-3. Annotate report
-4. Tag report
-
-** Journal
-1. Can refer to any consultation or report node or metric.
-2. Metrics are journal entries like in nomie (only metric lines are not shown in
-   journal tab).
-
-Properties:
-1. Spoiler (hidden type)
-
-Actions:
-1. Add new entry
-2. Link other artifacts
-3. Add images from, say, camera (for symptoms etc.)
-
-** Documents
-Similar to reports with maybe different properties and no manual input.
-
------
-
-Other features:
-1. Unified view
-2. Selective slicing based on time and filters
-3. Severity level
-4. Share to harp (camera scan, pdfs, clipboard, emails, whatsapp, etc.)
-5. OCR
-6. Smart Parsing
-7. Full Text Search
-8. Viz and Dashboards
+I am now making a more complete version with all advanced features, including
+document scanning, OCR, trends, and analytics using Kotlin Multiplatform [[https://github.com/lepisma/harp-kmp][here]].

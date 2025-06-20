@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID:       364034ff-0df2-44fe-a203-49b65e1a962b
+:END:
+#+TITLE: User Name
+
+The actual data files (in org attachments) have been removed, so you might not
+get Emacs (or Harp) to do the right thing when you click on attachement links.
+
+* Journal
+** Main
+*** Entry I                                                    :heart:ATTACH:
+:PROPERTIES:
+:ID:       0f480cc9-7719-451c-83ac-a7ac5dae95bc
+:DATETIME: <2025-05-07 Wed 15:21>
+:END:
+lorme ipsum
+
+#tstst(12)
+
+some image here maybe.
+
+[[attachment:PAN.jpeg][PAN.jpeg]]
+
+** Some Other Journal maybe
+...
+
+* Reports
+All reports are stored here with files and assets stored in
+
+** Report One
+
+** Report One                                                  :ATTACH:heart:
+:PROPERTIES:
+:DATETIME: [2025-05-07 Wed]
+:SOURCE:   cessna
+:ID:       2d8ff1f0-47d4-4fbb-b916-8d9a4cf289db
+:END:
+
+Notes and annotations go here. Tags are kept like in Org mode. ~ATTACH~ tag tells
+that this note has attachments, some of them might be referenced in the body
+like the following:
+
+[[attachment:cv.pdf]]
+
+- Lists are for undated (date is already in the report) journal entries which
+  can have metric values like this #mname(102).
+
+* Consultations
+
+* Metadata
+A few global values to be used.
+
+** Metrics
+This section contains metric definitions and properties. Actually values are
+logged in reports and journal entries.
+
+*** Metric Name
+:PROPERTIES:
+:TAG_ID: mname
+:END:
+
+Metrics can also be tagged.
+
+** Sources
+- cessna :: Cessna Lifeline Domlur
+- 1mg :: Tata 1mg
