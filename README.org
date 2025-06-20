@@ -22,5 +22,17 @@ The current version is running on [[https://harp-lepisma.netlify.app/]] and I st
 use it till I migrate to something else, though there is no documentation, poor
 usability, and a lot of caveats only known to me.
 
+Here are a few screenshots from one of my cat's records:
+
+#+BEGIN_HTML
+<br>
+<div style="display: flex; justify-content: space-between;">
+  <img src="screenshots/journals.jpg" width="25%" />
+  <img src="screenshots/metrics.jpg" width="25%" />
+  <img src="screenshots/reports.jpg" width="25%" />
+  <img src="screenshots/documents.jpg" width="25%" />
+</div>
+#+END_HTML
+
 I am now making a more complete version with all advanced features, including
 document scanning, OCR, trends, and analytics using Kotlin Multiplatform [[https://github.com/lepisma/harp-kmp][here]].
