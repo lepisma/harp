@@ -32,6 +32,7 @@ Here are a few screenshots from one of my cat's records:
   <img src="screenshots/reports.png" width="20%" />
   <img src="screenshots/documents.png" width="20%" />
 </div>
+<br>
 #+END_HTML
 
 I am now making a more complete version with all advanced features, including
