@@ -18,8 +18,8 @@ I have stopped working on this version of the application since, except Firefox
 on Linux (and Android?), every browser on every platform is a nightmare if you
 think about storing data persistently forever.
 
-The current version is running on [[https://harp-lepisma.netlify.app/]] and I use it
-till I migrate to something else, though there is no documentation, poor
+The current version is running on [[https://harp-lepisma.netlify.app/]] and I still
+use it till I migrate to something else, though there is no documentation, poor
 usability, and a lot of caveats only known to me.
 
 I am now making a more complete version with all advanced features, including
