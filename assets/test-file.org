@@ -6,7 +6,7 @@
 The actual data files (in org attachments) have been removed, so you might not
 get Emacs (or Harp) to do the right thing when you click on attachement links.
 
-* Journal
+* Journals
 ** Main
 *** Entry I                                                    :heart:ATTACH:
 :PROPERTIES:
@@ -45,7 +45,7 @@ like the following:
 - Lists are for undated (date is already in the report) journal entries which
   can have metric values like this #mname(102).
 
-* Consultations
+* Documents
 
 * Metadata
 A few global values to be used.
